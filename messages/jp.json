@@ -1,0 +1,138 @@
+{
+  "header": {
+    "reserve": "予約"
+  },
+  "hero": {
+    "subtitle": "和仏融合料理",
+    "bestTable": "2025年 最優秀ビストロノミー",
+    "avgPrice": "平均価格",
+    "googleRating": "Google"
+  },
+  "menu": {
+    "title": "メニュー",
+    "lunch": "ランチ",
+    "dinner": "ディナー",
+    "formules": "コース",
+    "entrees": "前菜",
+    "plats": "メイン",
+    "desserts": "デザート"
+  },
+  "footer": {
+    "contact": "お問い合わせ",
+    "address": "住所",
+    "phone": "電話番号",
+    "email": "メール",
+    "rights": "全著作権所有"
+  },
+  "cta": {
+    "reserve": "テーブルを予約する"
+  },
+  "reservation": {
+    "title": "ご予約",
+    "guests": "人数",
+    "guestsLabel": "{count}名様",
+    "date": "日付",
+    "time": "時間",
+    "selectDate": "日付を選択",
+    "selectTime": "時間を選択",
+    "next": "次へ",
+    "noSlots": "この日は空席がありません",
+    "closed": "この日は定休日です"
+  },
+  "confirm": {
+    "title": "お客様情報",
+    "name": "氏名",
+    "email": "メールアドレス",
+    "phone": "電話番号",
+    "notes": "備考（任意）",
+    "submit": "予約を確定する",
+    "success": "ご予約が確定しました！",
+    "successMessage": "{email}に確認メールをお送りします。",
+    "summary": "予約内容",
+    "guests": "{count}名様",
+    "back": "戻る"
+  },
+  "admin": {
+    "login": {
+      "title": "管理画面",
+      "password": "パスワード",
+      "submit": "ログイン",
+      "error": "パスワードが正しくありません"
+    },
+    "nav": {
+      "dashboard": "ダッシュボード",
+      "menu": "メニュー",
+      "reservations": "予約管理",
+      "schedule": "営業時間",
+      "settings": "設定",
+      "backToSite": "サイトに戻る"
+    },
+    "dashboard": {
+      "title": "ダッシュボード",
+      "todayReservations": "本日の予約",
+      "totalCovers": "席数",
+      "upcoming": "今後の予約"
+    },
+    "menuEditor": {
+      "title": "メニュー管理",
+      "addItem": "料理を追加",
+      "addFormule": "コースを追加",
+      "editItem": "料理を編集",
+      "editFormule": "コースを編集",
+      "name": "名前",
+      "description": "説明",
+      "price": "価格（€）",
+      "category": "カテゴリー",
+      "service": "提供時間",
+      "order": "表示順",
+      "active": "有効",
+      "save": "保存",
+      "cancel": "キャンセル",
+      "delete": "削除",
+      "items": "含まれる料理"
+    },
+    "reservationManager": {
+      "title": "予約管理",
+      "calendar": "カレンダー",
+      "list": "リスト",
+      "status": "ステータス",
+      "confirmed": "確認済み",
+      "cancelled": "キャンセル",
+      "noShow": "ノーショー",
+      "completed": "完了",
+      "partySize": "人数",
+      "noReservations": "予約はありません"
+    },
+    "scheduleEditor": {
+      "title": "営業時間管理",
+      "defaultSchedule": "通常営業時間",
+      "specialDates": "特別日",
+      "addSpecialDate": "特別日を追加",
+      "day": "曜日",
+      "open": "営業",
+      "closed": "定休",
+      "service": "サービス",
+      "openTime": "開店",
+      "closeTime": "閉店",
+      "maxCovers": "最大席数",
+      "days": {
+        "0": "日曜日",
+        "1": "月曜日",
+        "2": "火曜日",
+        "3": "水曜日",
+        "4": "木曜日",
+        "5": "金曜日",
+        "6": "土曜日"
+      }
+    },
+    "settings": {
+      "title": "設定",
+      "address": "住所",
+      "phone": "電話番号",
+      "email": "メールアドレス",
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "save": "保存"
+    }
+  }
+}

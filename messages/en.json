@@ -1,0 +1,138 @@
+{
+  "header": {
+    "reserve": "Reserve"
+  },
+  "hero": {
+    "subtitle": "Japanese-French cuisine",
+    "bestTable": "Best Bistronomic Table 2025",
+    "avgPrice": "Average price",
+    "googleRating": "Google"
+  },
+  "menu": {
+    "title": "Our Menu",
+    "lunch": "Lunch",
+    "dinner": "Dinner",
+    "formules": "Set Menus",
+    "entrees": "Starters",
+    "plats": "Mains",
+    "desserts": "Desserts"
+  },
+  "footer": {
+    "contact": "Contact",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "rights": "All rights reserved"
+  },
+  "cta": {
+    "reserve": "Reserve a table"
+  },
+  "reservation": {
+    "title": "Reservation",
+    "guests": "Number of guests",
+    "guestsLabel": "{count, plural, one {# guest} other {# guests}}",
+    "date": "Date",
+    "time": "Time",
+    "selectDate": "Choose a date",
+    "selectTime": "Choose a time",
+    "next": "Continue",
+    "noSlots": "No slots available for this date",
+    "closed": "Closed on this day"
+  },
+  "confirm": {
+    "title": "Your information",
+    "name": "Full name",
+    "email": "Email",
+    "phone": "Phone",
+    "notes": "Notes (optional)",
+    "submit": "Confirm reservation",
+    "success": "Reservation confirmed!",
+    "successMessage": "You will receive a confirmation email at {email}.",
+    "summary": "Summary",
+    "guests": "{count, plural, one {# guest} other {# guests}}",
+    "back": "Back"
+  },
+  "admin": {
+    "login": {
+      "title": "Administration",
+      "password": "Password",
+      "submit": "Sign in",
+      "error": "Incorrect password"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "menu": "Menu",
+      "reservations": "Reservations",
+      "schedule": "Schedule",
+      "settings": "Settings",
+      "backToSite": "Back to site"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "todayReservations": "Today's reservations",
+      "totalCovers": "Covers",
+      "upcoming": "Upcoming"
+    },
+    "menuEditor": {
+      "title": "Menu management",
+      "addItem": "Add item",
+      "addFormule": "Add set menu",
+      "editItem": "Edit item",
+      "editFormule": "Edit set menu",
+      "name": "Name",
+      "description": "Description",
+      "price": "Price (€)",
+      "category": "Category",
+      "service": "Service",
+      "order": "Display order",
+      "active": "Active",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "items": "Included items"
+    },
+    "reservationManager": {
+      "title": "Reservation management",
+      "calendar": "Calendar",
+      "list": "List",
+      "status": "Status",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "noShow": "No-show",
+      "completed": "Completed",
+      "partySize": "Covers",
+      "noReservations": "No reservations"
+    },
+    "scheduleEditor": {
+      "title": "Schedule management",
+      "defaultSchedule": "Default schedule",
+      "specialDates": "Special dates",
+      "addSpecialDate": "Add special date",
+      "day": "Day",
+      "open": "Open",
+      "closed": "Closed",
+      "service": "Service",
+      "openTime": "Opens",
+      "closeTime": "Closes",
+      "maxCovers": "Max covers",
+      "days": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "address": "Address",
+      "phone": "Phone",
+      "email": "Email",
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "save": "Save"
+    }
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "header": {
+    "reserve": "Réserver"
+  },
+  "hero": {
+    "subtitle": "Cuisine franco-japonaise",
+    "bestTable": "Meilleure Table Bistronomique 2025",
+    "avgPrice": "Prix moyen",
+    "googleRating": "Google"
+  },
+  "menu": {
+    "title": "Notre Carte",
+    "lunch": "Le Midi",
+    "dinner": "Le Soir",
+    "formules": "Formules",
+    "entrees": "Entrées",
+    "plats": "Plats",
+    "desserts": "Desserts"
+  },
+  "footer": {
+    "contact": "Contact",
+    "address": "Adresse",
+    "phone": "Téléphone",
+    "email": "Email",
+    "rights": "Tous droits réservés"
+  },
+  "cta": {
+    "reserve": "Réserver une table"
+  },
+  "reservation": {
+    "title": "Réservation",
+    "guests": "Nombre de convives",
+    "guestsLabel": "{count, plural, one {# convive} other {# convives}}",
+    "date": "Date",
+    "time": "Horaire",
+    "selectDate": "Choisissez une date",
+    "selectTime": "Choisissez un horaire",
+    "next": "Continuer",
+    "noSlots": "Aucun créneau disponible pour cette date",
+    "closed": "Fermé ce jour"
+  },
+  "confirm": {
+    "title": "Vos informations",
+    "name": "Nom complet",
+    "email": "Email",
+    "phone": "Téléphone",
+    "notes": "Notes (optionnel)",
+    "submit": "Confirmer la réservation",
+    "success": "Réservation confirmée !",
+    "successMessage": "Vous recevrez un email de confirmation à {email}.",
+    "summary": "Récapitulatif",
+    "guests": "{count, plural, one {# convive} other {# convives}}",
+    "back": "Retour"
+  },
+  "admin": {
+    "login": {
+      "title": "Administration",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "error": "Mot de passe incorrect"
+    },
+    "nav": {
+      "dashboard": "Tableau de bord",
+      "menu": "Carte",
+      "reservations": "Réservations",
+      "schedule": "Horaires",
+      "settings": "Paramètres",
+      "backToSite": "Retour au site"
+    },
+    "dashboard": {
+      "title": "Tableau de bord",
+      "todayReservations": "Réservations du jour",
+      "totalCovers": "Couverts",
+      "upcoming": "À venir"
+    },
+    "menuEditor": {
+      "title": "Gestion de la carte",
+      "addItem": "Ajouter un plat",
+      "addFormule": "Ajouter une formule",
+      "editItem": "Modifier le plat",
+      "editFormule": "Modifier la formule",
+      "name": "Nom",
+      "description": "Description",
+      "price": "Prix (€)",
+      "category": "Catégorie",
+      "service": "Service",
+      "order": "Ordre d'affichage",
+      "active": "Actif",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "items": "Plats inclus"
+    },
+    "reservationManager": {
+      "title": "Gestion des réservations",
+      "calendar": "Calendrier",
+      "list": "Liste",
+      "status": "Statut",
+      "confirmed": "Confirmée",
+      "cancelled": "Annulée",
+      "noShow": "No-show",
+      "completed": "Terminée",
+      "partySize": "Couverts",
+      "noReservations": "Aucune réservation"
+    },
+    "scheduleEditor": {
+      "title": "Gestion des horaires",
+      "defaultSchedule": "Horaires par défaut",
+      "specialDates": "Dates spéciales",
+      "addSpecialDate": "Ajouter une date spéciale",
+      "day": "Jour",
+      "open": "Ouvert",
+      "closed": "Fermé",
+      "service": "Service",
+      "openTime": "Ouverture",
+      "closeTime": "Fermeture",
+      "maxCovers": "Couverts max",
+      "days": {
+        "0": "Dimanche",
+        "1": "Lundi",
+        "2": "Mardi",
+        "3": "Mercredi",
+        "4": "Jeudi",
+        "5": "Vendredi",
+        "6": "Samedi"
+      }
+    },
+    "settings": {
+      "title": "Paramètres",
+      "address": "Adresse",
+      "phone": "Téléphone",
+      "email": "Email",
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "save": "Enregistrer"
+    }
+  }
+}
