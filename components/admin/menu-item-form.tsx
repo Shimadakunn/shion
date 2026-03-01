@@ -4,6 +4,10 @@ import { useTranslations } from "next-intl";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import type { Id } from "@/convex/_generated/dataModel";
 
 type MenuItem = {
@@ -15,6 +19,7 @@ type MenuItem = {
   price: number;
   order: number;
   isActive: boolean;
+  subcategory?: string;
 };
 
 type Props = {
@@ -42,6 +47,7 @@ export function MenuItemForm({ item, onClose }: Props) {
   const [price, setPrice] = useState(String(item?.price ?? ""));
   const [order, setOrder] = useState(String(item?.order ?? 0));
   const [isActive, setIsActive] = useState(item?.isActive ?? true);
+  const [subcategory, setSubcategory] = useState(item?.subcategory ?? "");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,6 +59,7 @@ export function MenuItemForm({ item, onClose }: Props) {
       price: Number(price),
       order: Number(order),
       isActive,
+      subcategory: subcategory.trim() || undefined,
     };
 
     if (item) await update({ id: item._id, ...data });
@@ -70,13 +77,11 @@ export function MenuItemForm({ item, onClose }: Props) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="text-muted-foreground mb-1 block text-xs">
-              {t("category")}
-            </label>
+            <Label className="mb-1">{t("category")}</Label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as MenuItem["category"])}
-              className="border-border w-full border bg-transparent px-3 py-2 text-sm"
+              className="border-input w-full border bg-transparent px-2.5 py-1.5 text-xs"
             >
               <option value="entrees">Entrées</option>
               <option value="plats">Plats</option>
@@ -84,13 +89,11 @@ export function MenuItemForm({ item, onClose }: Props) {
             </select>
           </div>
           <div>
-            <label className="text-muted-foreground mb-1 block text-xs">
-              {t("service")}
-            </label>
+            <Label className="mb-1">{t("service")}</Label>
             <select
               value={service}
               onChange={(e) => setService(e.target.value as MenuItem["service"])}
-              className="border-border w-full border bg-transparent px-3 py-2 text-sm"
+              className="border-input w-full border bg-transparent px-2.5 py-1.5 text-xs"
             >
               <option value="lunch">Midi</option>
               <option value="dinner">Soir</option>
@@ -99,118 +102,55 @@ export function MenuItemForm({ item, onClose }: Props) {
           </div>
         </div>
 
+        <div>
+          <Label className="mb-1">{t("subcategory")}</Label>
+          <Input
+            placeholder="ex: Sushi, Maki..."
+            value={subcategory}
+            onChange={(e) => setSubcategory(e.target.value)}
+          />
+        </div>
+
         {/* Trilingual name fields */}
         <div className="space-y-2">
-          <label className="text-muted-foreground mb-1 block text-xs">
-            {t("name")}
-          </label>
+          <Label>{t("name")}</Label>
           <div className="grid gap-2 sm:grid-cols-3">
-            <input
-              placeholder="FR"
-              value={nameFr}
-              onChange={(e) => setNameFr(e.target.value)}
-              required
-              className="border-border w-full border bg-transparent px-3 py-2 text-sm"
-            />
-            <input
-              placeholder="EN"
-              value={nameEn}
-              onChange={(e) => setNameEn(e.target.value)}
-              required
-              className="border-border w-full border bg-transparent px-3 py-2 text-sm"
-            />
-            <input
-              placeholder="JP"
-              value={nameJp}
-              onChange={(e) => setNameJp(e.target.value)}
-              required
-              className="border-border w-full border bg-transparent px-3 py-2 text-sm"
-            />
+            <Input placeholder="FR" value={nameFr} onChange={(e) => setNameFr(e.target.value)} required />
+            <Input placeholder="EN" value={nameEn} onChange={(e) => setNameEn(e.target.value)} required />
+            <Input placeholder="JP" value={nameJp} onChange={(e) => setNameJp(e.target.value)} required />
           </div>
         </div>
 
         {/* Trilingual description fields */}
         <div className="space-y-2">
-          <label className="text-muted-foreground mb-1 block text-xs">
-            {t("description")}
-          </label>
+          <Label>{t("description")}</Label>
           <div className="grid gap-2 sm:grid-cols-3">
-            <textarea
-              placeholder="FR"
-              value={descFr}
-              onChange={(e) => setDescFr(e.target.value)}
-              rows={2}
-              className="border-border w-full border bg-transparent px-3 py-2 text-sm"
-            />
-            <textarea
-              placeholder="EN"
-              value={descEn}
-              onChange={(e) => setDescEn(e.target.value)}
-              rows={2}
-              className="border-border w-full border bg-transparent px-3 py-2 text-sm"
-            />
-            <textarea
-              placeholder="JP"
-              value={descJp}
-              onChange={(e) => setDescJp(e.target.value)}
-              rows={2}
-              className="border-border w-full border bg-transparent px-3 py-2 text-sm"
-            />
+            <Textarea placeholder="FR" value={descFr} onChange={(e) => setDescFr(e.target.value)} rows={2} />
+            <Textarea placeholder="EN" value={descEn} onChange={(e) => setDescEn(e.target.value)} rows={2} />
+            <Textarea placeholder="JP" value={descJp} onChange={(e) => setDescJp(e.target.value)} rows={2} />
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
-            <label className="text-muted-foreground mb-1 block text-xs">
-              {t("price")}
-            </label>
-            <input
-              type="number"
-              step="0.5"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              required
-              className="border-border w-full border bg-transparent px-3 py-2 text-sm"
-            />
+            <Label className="mb-1">{t("price")}</Label>
+            <Input type="number" step="0.5" value={price} onChange={(e) => setPrice(e.target.value)} required />
           </div>
           <div>
-            <label className="text-muted-foreground mb-1 block text-xs">
-              {t("order")}
-            </label>
-            <input
-              type="number"
-              value={order}
-              onChange={(e) => setOrder(e.target.value)}
-              className="border-border w-full border bg-transparent px-3 py-2 text-sm"
-            />
+            <Label className="mb-1">{t("order")}</Label>
+            <Input type="number" value={order} onChange={(e) => setOrder(e.target.value)} />
           </div>
           <div className="flex items-end gap-2 pb-1">
-            <input
-              type="checkbox"
-              checked={isActive}
-              onChange={(e) => setIsActive(e.target.checked)}
-              id="active"
-            />
-            <label htmlFor="active" className="text-sm">
-              {t("active")}
-            </label>
+            <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} id="active" />
+            <Label htmlFor="active">{t("active")}</Label>
           </div>
         </div>
 
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="bg-foreground text-background px-6 py-2 text-xs font-medium tracking-wider uppercase"
-          >
-            {t("save")}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="border-border text-muted-foreground border px-6 py-2 text-xs font-medium tracking-wider uppercase"
-          >
+          <Button type="submit">{t("save")}</Button>
+          <Button type="button" variant="outline" onClick={onClose}>
             {t("cancel")}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

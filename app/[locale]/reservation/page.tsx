@@ -8,6 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { GuestPicker } from "@/components/reservation/guest-picker";
 import { DatePicker } from "@/components/reservation/date-picker";
 import { TimeSlotPicker } from "@/components/reservation/time-slot-picker";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -121,7 +122,7 @@ export default function ReservationPage() {
         <div className="mt-12 text-center">
           <Link
             href={`/reservation/confirm?guests=${guests}&date=${date}&service=${timeSelection.service}&time=${timeSelection.time}`}
-            className="bg-foreground text-background hover:bg-foreground/90 inline-block px-10 py-3 text-xs font-medium tracking-wider uppercase transition-colors"
+            className={buttonVariants({ variant: "default", size: "lg" })}
           >
             {t("next")}
           </Link>
@@ -148,9 +149,10 @@ function AccordionStep({
 }) {
   return (
     <div className="border border-border">
-      <button
+      <Button
+        variant="ghost"
         onClick={onToggle}
-        className="flex w-full items-center justify-between px-6 py-4"
+        className="flex h-auto w-full items-center justify-between px-6 py-4"
       >
         <div className="flex items-center gap-4">
           <span className="text-xs font-medium tracking-wider uppercase">
@@ -166,7 +168,7 @@ function AccordionStep({
             isOpen && "rotate-180",
           )}
         />
-      </button>
+      </Button>
       {isOpen && <div className="px-6 pb-6">{children}</div>}
     </div>
   );

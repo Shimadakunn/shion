@@ -6,6 +6,10 @@ import { api } from "@/convex/_generated/api";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Link } from "@/i18n/navigation";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 export default function ConfirmPage() {
   const t = useTranslations("confirm");
@@ -56,7 +60,7 @@ export default function ConfirmPage() {
           </p>
           <Link
             href="/"
-            className="bg-foreground text-background hover:bg-foreground/90 inline-block px-8 py-3 text-xs font-medium tracking-wider uppercase transition-colors"
+            className={buttonVariants({ variant: "default", size: "lg" })}
           >
             Shion
           </Link>
@@ -95,70 +99,66 @@ export default function ConfirmPage() {
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="mb-2 block text-xs font-medium tracking-wider uppercase">
+          <Label className="mb-2 tracking-wider uppercase">
             {t("name")}
-          </label>
-          <input
+          </Label>
+          <Input
             type="text"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="border-border focus:ring-foreground w-full border bg-transparent px-4 py-3 text-sm outline-none focus:ring-1"
           />
         </div>
 
         <div>
-          <label className="mb-2 block text-xs font-medium tracking-wider uppercase">
+          <Label className="mb-2 tracking-wider uppercase">
             {t("email")}
-          </label>
-          <input
+          </Label>
+          <Input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border-border focus:ring-foreground w-full border bg-transparent px-4 py-3 text-sm outline-none focus:ring-1"
           />
         </div>
 
         <div>
-          <label className="mb-2 block text-xs font-medium tracking-wider uppercase">
+          <Label className="mb-2 tracking-wider uppercase">
             {t("phone")}
-          </label>
-          <input
+          </Label>
+          <Input
             type="tel"
             required
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="border-border focus:ring-foreground w-full border bg-transparent px-4 py-3 text-sm outline-none focus:ring-1"
           />
         </div>
 
         <div>
-          <label className="mb-2 block text-xs font-medium tracking-wider uppercase">
+          <Label className="mb-2 tracking-wider uppercase">
             {t("notes")}
-          </label>
-          <textarea
+          </Label>
+          <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            className="border-border focus:ring-foreground w-full border bg-transparent px-4 py-3 text-sm outline-none focus:ring-1"
           />
         </div>
 
         <div className="flex items-center gap-4 pt-4">
           <Link
             href="/reservation"
-            className="border-border text-muted-foreground hover:text-foreground border px-6 py-3 text-xs font-medium tracking-wider uppercase transition-colors"
+            className={buttonVariants({ variant: "outline" })}
           >
             {t("back")}
           </Link>
-          <button
+          <Button
             type="submit"
             disabled={submitting}
-            className="bg-foreground text-background hover:bg-foreground/90 flex-1 px-6 py-3 text-xs font-medium tracking-wider uppercase transition-colors disabled:opacity-50"
+            className="flex-1"
           >
             {t("submit")}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

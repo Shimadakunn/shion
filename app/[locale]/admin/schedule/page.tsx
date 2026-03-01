@@ -4,6 +4,10 @@ import { useTranslations } from "next-intl";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2 } from "lucide-react";
 
 type ServiceInput = {
@@ -121,61 +125,64 @@ export default function AdminSchedulePage() {
                   <span className="w-24 text-sm font-medium">
                     {t(`days.${day}`)}
                   </span>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="xs"
                     onClick={() => toggleDay(day)}
-                    className={`text-xs font-medium uppercase tracking-wider ${isOpen ? "text-green-600" : "text-red-500"}`}
                   >
-                    {isOpen ? t("open") : t("closed")}
-                  </button>
+                    <Badge variant={isOpen ? "default" : "destructive"}>
+                      {isOpen ? t("open") : t("closed")}
+                    </Badge>
+                  </Button>
                 </div>
                 {isOpen && (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
                     onClick={() => addService(day)}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <Plus className="h-4 w-4" />
-                  </button>
+                  </Button>
                 )}
               </div>
 
               {isOpen && daySchedule?.services && (
                 <div className="mt-3 space-y-2">
                   {daySchedule.services.map((svc, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 text-sm"
-                    >
-                      <input
+                    <div key={i} className="flex items-center gap-3 text-sm">
+                      <Input
                         value={svc.name}
                         onChange={(e) => updateService(day, i, "name", e.target.value)}
-                        className="border-border w-24 border bg-transparent px-2 py-1 text-xs"
+                        className="w-24"
                       />
-                      <input
+                      <Input
                         type="time"
                         value={svc.openTime}
                         onChange={(e) => updateService(day, i, "openTime", e.target.value)}
-                        className="border-border border bg-transparent px-2 py-1 text-xs"
+                        className="w-28"
                       />
                       <span className="text-muted-foreground">—</span>
-                      <input
+                      <Input
                         type="time"
                         value={svc.closeTime}
                         onChange={(e) => updateService(day, i, "closeTime", e.target.value)}
-                        className="border-border border bg-transparent px-2 py-1 text-xs"
+                        className="w-28"
                       />
-                      <input
+                      <Input
                         type="number"
                         value={svc.maxCovers}
                         onChange={(e) => updateService(day, i, "maxCovers", Number(e.target.value))}
-                        className="border-border w-16 border bg-transparent px-2 py-1 text-xs"
+                        className="w-16"
                       />
                       <span className="text-muted-foreground text-xs">max</span>
-                      <button
+                      <Button
+                        variant="destructive"
+                        size="icon-xs"
                         onClick={() => removeService(day, i)}
-                        className="text-muted-foreground hover:text-destructive ml-auto transition-colors"
+                        className="ml-auto"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -192,38 +199,33 @@ export default function AdminSchedulePage() {
 
       <div className="mb-4 flex items-end gap-3 border border-border p-4">
         <div>
-          <label className="text-muted-foreground mb-1 block text-xs">Date</label>
-          <input
+          <Label className="mb-1">Date</Label>
+          <Input
             type="date"
             value={newDate}
             onChange={(e) => setNewDate(e.target.value)}
-            className="border-border border bg-transparent px-3 py-2 text-sm"
           />
         </div>
         <div>
-          <label className="flex items-center gap-2 text-sm">
+          <Label className="flex items-center gap-2">
             <input
               type="checkbox"
               checked={newDateOpen}
               onChange={(e) => setNewDateOpen(e.target.checked)}
             />
             {t("open")}
-          </label>
+          </Label>
         </div>
         <div className="flex-1">
-          <label className="text-muted-foreground mb-1 block text-xs">Note</label>
-          <input
+          <Label className="mb-1">Note</Label>
+          <Input
             value={newDateNote}
             onChange={(e) => setNewDateNote(e.target.value)}
-            className="border-border w-full border bg-transparent px-3 py-2 text-sm"
           />
         </div>
-        <button
-          onClick={addSpecialDate}
-          className="bg-foreground text-background px-4 py-2 text-xs font-medium tracking-wider uppercase"
-        >
+        <Button onClick={addSpecialDate}>
           {t("addSpecialDate")}
-        </button>
+        </Button>
       </div>
 
       <div className="space-y-2">
@@ -234,23 +236,22 @@ export default function AdminSchedulePage() {
           >
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium">{sd.date}</span>
-              <span
-                className={`text-xs font-medium uppercase ${sd.isOpen ? "text-green-600" : "text-red-500"}`}
-              >
+              <Badge variant={sd.isOpen ? "default" : "destructive"}>
                 {sd.isOpen ? t("open") : t("closed")}
-              </span>
+              </Badge>
               {sd.note && (
                 <span className="text-muted-foreground text-xs italic">
                   {sd.note}
                 </span>
               )}
             </div>
-            <button
+            <Button
+              variant="destructive"
+              size="icon-xs"
               onClick={() => removeSpecial({ id: sd._id })}
-              className="text-muted-foreground hover:text-destructive transition-colors"
             >
               <Trash2 className="h-3.5 w-3.5" />
-            </button>
+            </Button>
           </div>
         ))}
       </div>

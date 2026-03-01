@@ -24,6 +24,7 @@ export default defineSchema({
     price: v.number(),
     order: v.number(),
     isActive: v.boolean(),
+    subcategory: v.optional(v.string()),
   })
     .index("by_category", ["category"])
     .index("by_service", ["service"])
@@ -98,6 +99,7 @@ export default defineSchema({
     address: v.string(),
     phone: v.string(),
     email: v.string(),
+    googleMapsUrl: v.optional(v.string()),
     socialLinks: v.optional(
       v.object({
         instagram: v.optional(v.string()),

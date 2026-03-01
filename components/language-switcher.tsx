@@ -3,7 +3,7 @@
 import { useLocale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const localeLabels: Record<string, string> = {
   fr: "FR",
@@ -21,20 +21,21 @@ export function LanguageSwitcher() {
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-0.5">
       {routing.locales.map((loc) => (
-        <button
+        <Button
           key={loc}
+          variant="ghost"
+          size="xs"
           onClick={() => handleSwitch(loc)}
-          className={cn(
-            "px-2 py-1 text-xs font-medium tracking-wider transition-colors",
+          className={
             loc === locale
               ? "text-foreground"
-              : "text-muted-foreground hover:text-foreground",
-          )}
+              : "text-muted-foreground"
+          }
         >
           {localeLabels[loc]}
-        </button>
+        </Button>
       ))}
     </div>
   );

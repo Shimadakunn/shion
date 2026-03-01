@@ -4,6 +4,9 @@ import { useTranslations } from "next-intl";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function AdminSettingsPage() {
   const t = useTranslations("admin.settings");
@@ -13,6 +16,7 @@ export default function AdminSettingsPage() {
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [googleMapsUrl, setGoogleMapsUrl] = useState("");
   const [instagram, setInstagram] = useState("");
   const [facebook, setFacebook] = useState("");
   const [saved, setSaved] = useState(false);
@@ -22,6 +26,7 @@ export default function AdminSettingsPage() {
       setAddress(settings.address);
       setPhone(settings.phone);
       setEmail(settings.email);
+      setGoogleMapsUrl(settings.googleMapsUrl ?? "");
       setInstagram(settings.socialLinks?.instagram ?? "");
       setFacebook(settings.socialLinks?.facebook ?? "");
     }
@@ -33,6 +38,7 @@ export default function AdminSettingsPage() {
       address,
       phone,
       email,
+      googleMapsUrl: googleMapsUrl || undefined,
       socialLinks: {
         instagram: instagram || undefined,
         facebook: facebook || undefined,
@@ -50,70 +56,49 @@ export default function AdminSettingsPage() {
 
       <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
         <div>
-          <label className="text-muted-foreground mb-1 block text-xs">
-            {t("address")}
-          </label>
-          <input
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="border-border w-full border bg-transparent px-3 py-2 text-sm"
+          <Label className="mb-1">{t("address")}</Label>
+          <Input value={address} onChange={(e) => setAddress(e.target.value)} />
+        </div>
+
+        <div>
+          <Label className="mb-1">{t("phone")}</Label>
+          <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+        </div>
+
+        <div>
+          <Label className="mb-1">{t("email")}</Label>
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </div>
+
+        <div>
+          <Label className="mb-1">{t("googleMapsUrl")}</Label>
+          <Input
+            value={googleMapsUrl}
+            onChange={(e) => setGoogleMapsUrl(e.target.value)}
+            placeholder="https://maps.google.com/..."
           />
         </div>
 
         <div>
-          <label className="text-muted-foreground mb-1 block text-xs">
-            {t("phone")}
-          </label>
-          <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="border-border w-full border bg-transparent px-3 py-2 text-sm"
-          />
-        </div>
-
-        <div>
-          <label className="text-muted-foreground mb-1 block text-xs">
-            {t("email")}
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="border-border w-full border bg-transparent px-3 py-2 text-sm"
-          />
-        </div>
-
-        <div>
-          <label className="text-muted-foreground mb-1 block text-xs">
-            {t("instagram")}
-          </label>
-          <input
+          <Label className="mb-1">{t("instagram")}</Label>
+          <Input
             value={instagram}
             onChange={(e) => setInstagram(e.target.value)}
             placeholder="https://instagram.com/..."
-            className="border-border w-full border bg-transparent px-3 py-2 text-sm"
           />
         </div>
 
         <div>
-          <label className="text-muted-foreground mb-1 block text-xs">
-            {t("facebook")}
-          </label>
-          <input
+          <Label className="mb-1">{t("facebook")}</Label>
+          <Input
             value={facebook}
             onChange={(e) => setFacebook(e.target.value)}
             placeholder="https://facebook.com/..."
-            className="border-border w-full border bg-transparent px-3 py-2 text-sm"
           />
         </div>
 
         <div className="flex items-center gap-4 pt-2">
-          <button
-            type="submit"
-            className="bg-foreground text-background px-6 py-2 text-xs font-medium tracking-wider uppercase"
-          >
-            {t("save")}
-          </button>
+          <Button type="submit">{t("save")}</Button>
           {saved && (
             <span className="text-sm text-green-600">Saved</span>
           )}

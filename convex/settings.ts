@@ -12,6 +12,7 @@ export const upsert = mutation({
     address: v.string(),
     phone: v.string(),
     email: v.string(),
+    googleMapsUrl: v.optional(v.string()),
     socialLinks: v.optional(
       v.object({
         instagram: v.optional(v.string()),

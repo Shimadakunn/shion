@@ -1,6 +1,9 @@
+"use client";
+
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { LanguageSwitcher } from "./language-switcher";
+import { buttonVariants } from "@/components/ui/button";
 
 export function Header() {
   const t = useTranslations("header");
@@ -16,7 +19,7 @@ export function Header() {
           <LanguageSwitcher />
           <Link
             href="/reservation"
-            className="border-foreground/20 hover:bg-foreground hover:text-background text-xs font-medium tracking-wider uppercase border px-4 py-2 transition-colors"
+            className={buttonVariants({ variant: "outline", size: "default" })}
           >
             {t("reserve")}
           </Link>

@@ -49,6 +49,7 @@ export const create = mutation({
     price: v.number(),
     order: v.number(),
     isActive: v.boolean(),
+    subcategory: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("menuItems", args);
@@ -77,6 +78,7 @@ export const update = mutation({
     price: v.optional(v.number()),
     order: v.optional(v.number()),
     isActive: v.optional(v.boolean()),
+    subcategory: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const { id, ...fields } = args;

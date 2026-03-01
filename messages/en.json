@@ -84,6 +84,7 @@
       "price": "Price (€)",
       "category": "Category",
       "service": "Service",
+      "subcategory": "Subcategory",
       "order": "Display order",
       "active": "Active",
       "save": "Save",
@@ -130,6 +131,7 @@
       "address": "Address",
       "phone": "Phone",
       "email": "Email",
+      "googleMapsUrl": "Google Maps link",
       "instagram": "Instagram",
       "facebook": "Facebook",
       "save": "Save"

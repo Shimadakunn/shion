@@ -3,10 +3,15 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
+import { MapPin } from "lucide-react";
 
 export function FloatingCTA() {
   const t = useTranslations("cta");
+  const settings = useQuery(api.settings.get);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -17,6 +22,8 @@ export function FloatingCTA() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const googleMapsUrl = settings?.googleMapsUrl;
+
   return (
     <div
       className={cn(
@@ -26,12 +33,31 @@ export function FloatingCTA() {
           : "translate-y-4 opacity-0 pointer-events-none",
       )}
     >
-      <Link
-        href="/reservation"
-        className="bg-foreground text-background hover:bg-foreground/90 inline-block px-8 py-3 text-xs font-medium tracking-wider uppercase shadow-lg transition-colors"
-      >
-        {t("reserve")}
-      </Link>
+      <div className="flex items-center gap-2">
+        <Link
+          href="/reservation"
+          className={cn(
+            buttonVariants({ variant: "default", size: "lg" }),
+            "shadow-lg",
+          )}
+        >
+          {t("reserve")}
+        </Link>
+        {googleMapsUrl && (
+          <a
+            href={googleMapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "lg" }),
+              "shadow-lg px-3",
+            )}
+            aria-label="Google Maps"
+          >
+            <MapPin className="size-5" />
+          </a>
+        )}
+      </div>
     </div>
   );
 }

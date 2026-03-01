@@ -4,6 +4,9 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { login } from "@/lib/admin-auth";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function LoginForm() {
   const t = useTranslations("admin.login");
@@ -35,14 +38,13 @@ export function LoginForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-2 block text-xs font-medium tracking-wider uppercase">
+            <Label className="mb-2 tracking-wider uppercase">
               {t("password")}
-            </label>
-            <input
+            </Label>
+            <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="border-border focus:ring-foreground w-full border bg-transparent px-4 py-3 text-sm outline-none focus:ring-1"
               autoFocus
             />
           </div>
@@ -51,13 +53,9 @@ export function LoginForm() {
             <p className="text-destructive text-sm">{t("error")}</p>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-foreground text-background hover:bg-foreground/90 w-full px-6 py-3 text-xs font-medium tracking-wider uppercase transition-colors disabled:opacity-50"
-          >
+          <Button type="submit" disabled={loading} className="w-full">
             {t("submit")}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

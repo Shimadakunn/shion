@@ -1,9 +1,10 @@
 "use client";
 
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { logout } from "@/lib/admin-auth";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -26,7 +27,6 @@ const navItems = [
 export function AdminSidebar() {
   const t = useTranslations("admin.nav");
   const pathname = usePathname();
-  const locale = useLocale();
   const router = useRouter();
 
   async function handleLogout() {
@@ -55,10 +55,10 @@ export function AdminSidebar() {
               key={key}
               href={href}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                "flex items-center gap-3 px-3 py-2 text-sm transition-colors",
                 isActive
-                  ? "bg-foreground/5 text-foreground font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-foreground/5",
+                  ? "bg-accent text-accent-foreground font-medium"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/10",
               )}
             >
               <Icon className="h-4 w-4" />
@@ -71,18 +71,20 @@ export function AdminSidebar() {
       <div className="border-t border-border p-3 space-y-1">
         <Link
           href="/"
-          className="text-muted-foreground hover:text-foreground flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors"
+          className="text-muted-foreground hover:text-foreground flex items-center gap-3 px-3 py-2 text-sm transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("backToSite")}
         </Link>
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={handleLogout}
-          className="text-muted-foreground hover:text-foreground flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors"
+          className="w-full justify-start gap-3 text-muted-foreground"
         >
           <LogOut className="h-4 w-4" />
           Logout
-        </button>
+        </Button>
       </div>
     </aside>
   );

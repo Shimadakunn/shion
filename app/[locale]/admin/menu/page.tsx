@@ -6,6 +6,8 @@ import { api } from "@/convex/_generated/api";
 import { useState } from "react";
 import { MenuItemForm } from "@/components/admin/menu-item-form";
 import { FormuleForm } from "@/components/admin/formule-form";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2 } from "lucide-react";
 import type { Id } from "@/convex/_generated/dataModel";
 
@@ -41,13 +43,14 @@ export default function AdminMenuPage() {
           <h2 className="text-sm font-medium tracking-wider uppercase">
             Plats
           </h2>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setEditingItem("new")}
-            className="flex items-center gap-2 text-xs font-medium tracking-wider uppercase text-muted-foreground hover:text-foreground transition-colors"
           >
             <Plus className="h-4 w-4" />
             {t("addItem")}
-          </button>
+          </Button>
         </div>
 
         {editingItem && (
@@ -65,31 +68,30 @@ export default function AdminMenuPage() {
               key={item._id}
               className="flex items-center justify-between border border-border p-4"
             >
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <span className={item.isActive ? "" : "text-muted-foreground line-through"}>
                   {item.name.fr}
                 </span>
-                <span className="text-muted-foreground text-xs uppercase">
-                  {item.category}
-                </span>
-                <span className="text-muted-foreground text-xs">
-                  {item.service}
-                </span>
+                <Badge variant="outline">{item.category}</Badge>
+                {item.subcategory && <Badge variant="outline">{item.subcategory}</Badge>}
+                <Badge variant="secondary">{item.service}</Badge>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <span className="text-sm">{item.price}€</span>
-                <button
+                <Button
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setEditingItem(item._id)}
-                  className="text-muted-foreground hover:text-foreground text-xs uppercase transition-colors"
                 >
                   Edit
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="icon-xs"
                   onClick={() => removeItem({ id: item._id })}
-                  className="text-muted-foreground hover:text-destructive transition-colors"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -102,13 +104,14 @@ export default function AdminMenuPage() {
           <h2 className="text-sm font-medium tracking-wider uppercase">
             Formules
           </h2>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setEditingFormule("new")}
-            className="flex items-center gap-2 text-xs font-medium tracking-wider uppercase text-muted-foreground hover:text-foreground transition-colors"
           >
             <Plus className="h-4 w-4" />
             {t("addFormule")}
-          </button>
+          </Button>
         </div>
 
         {editingFormule && (
@@ -126,28 +129,28 @@ export default function AdminMenuPage() {
               key={f._id}
               className="flex items-center justify-between border border-border p-4"
             >
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <span className={f.isActive ? "" : "text-muted-foreground line-through"}>
                   {f.name.fr}
                 </span>
-                <span className="text-muted-foreground text-xs">
-                  {f.service}
-                </span>
+                <Badge variant="secondary">{f.service}</Badge>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <span className="text-sm">{f.price}€</span>
-                <button
+                <Button
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setEditingFormule(f._id)}
-                  className="text-muted-foreground hover:text-foreground text-xs uppercase transition-colors"
                 >
                   Edit
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="icon-xs"
                   onClick={() => removeFormule({ id: f._id })}
-                  className="text-muted-foreground hover:text-destructive transition-colors"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                </button>
+                </Button>
               </div>
             </div>
           ))}

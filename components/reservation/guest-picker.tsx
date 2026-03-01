@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   value: number;
@@ -13,18 +13,14 @@ export function GuestPicker({ value, onChange }: Props) {
   return (
     <div className="flex flex-wrap gap-3">
       {GUEST_OPTIONS.map((n) => (
-        <button
+        <Button
           key={n}
+          variant={n === value ? "default" : "outline"}
+          size="icon"
           onClick={() => onChange(n)}
-          className={cn(
-            "flex h-12 w-12 items-center justify-center text-sm font-medium transition-colors",
-            n === value
-              ? "bg-foreground text-background"
-              : "border border-border text-muted-foreground hover:border-foreground hover:text-foreground",
-          )}
         >
           {n}
-        </button>
+        </Button>
       ))}
     </div>
   );

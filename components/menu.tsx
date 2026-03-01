@@ -4,11 +4,30 @@ import { useTranslations, useLocale } from "next-intl";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { FadeIn } from "./motion";
 
 type Service = "lunch" | "dinner";
 type Locale = "fr" | "en" | "jp";
+type MenuItemWithSub = { subcategory?: string; [key: string]: unknown };
+
+function groupBySubcategory<T extends MenuItemWithSub>(items: T[]) {
+  const groups: { subcategory: string | undefined; items: T[] }[] = [];
+  const map = new Map<string | undefined, T[]>();
+
+  for (const item of items) {
+    const key = item.subcategory || undefined;
+    const existing = map.get(key);
+    if (existing) existing.push(item);
+    else {
+      const arr = [item];
+      map.set(key, arr);
+      groups.push({ subcategory: key, items: arr });
+    }
+  }
+
+  return groups;
+}
 
 export function Menu() {
   const t = useTranslations("menu");
@@ -33,18 +52,15 @@ export function Menu() {
       {/* Service toggle */}
       <div className="mb-16 flex justify-center gap-1">
         {(["lunch", "dinner"] as const).map((s) => (
-          <button
+          <Button
             key={s}
+            variant={s === service ? "default" : "ghost"}
+            size="lg"
             onClick={() => setService(s)}
-            className={cn(
-              "px-8 py-3 text-xs font-medium tracking-wider uppercase transition-colors",
-              s === service
-                ? "bg-foreground text-background"
-                : "text-muted-foreground hover:text-foreground",
-            )}
+            className="px-8 tracking-wider uppercase"
           >
             {t(s)}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -88,21 +104,32 @@ export function Menu() {
                 <h3 className="text-muted-foreground mb-8 text-center text-xs font-medium tracking-[0.3em] uppercase">
                   {t(key)}
                 </h3>
-                <div className="space-y-6">
-                  {categoryItems.map((item) => (
-                    <div
-                      key={item._id}
-                      className="flex items-start justify-between border-b border-dotted border-border pb-6"
-                    >
-                      <div className="space-y-1">
-                        <h4 className="font-medium">{item.name[locale]}</h4>
-                        <p className="text-muted-foreground max-w-md text-sm">
-                          {item.description[locale]}
-                        </p>
+                <div className="space-y-8">
+                  {groupBySubcategory(categoryItems).map(({ subcategory, items: groupItems }) => (
+                    <div key={subcategory ?? "__none"}>
+                      {subcategory && (
+                        <h4 className="text-muted-foreground/70 mb-4 text-center text-[0.65rem] font-medium tracking-[0.25em] uppercase">
+                          — {subcategory} —
+                        </h4>
+                      )}
+                      <div className="space-y-6">
+                        {groupItems.map((item) => (
+                          <div
+                            key={item._id}
+                            className="flex items-start justify-between border-b border-dotted border-border pb-6"
+                          >
+                            <div className="space-y-1">
+                              <h4 className="font-medium">{item.name[locale]}</h4>
+                              <p className="text-muted-foreground max-w-md text-sm">
+                                {item.description[locale]}
+                              </p>
+                            </div>
+                            <span className="text-primary ml-8 shrink-0 text-lg font-light">
+                              {item.price}€
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                      <span className="text-primary ml-8 shrink-0 text-lg font-light">
-                        {item.price}€
-                      </span>
                     </div>
                   ))}
                 </div>

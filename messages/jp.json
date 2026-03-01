@@ -84,6 +84,7 @@
       "price": "価格（€）",
       "category": "カテゴリー",
       "service": "提供時間",
+      "subcategory": "サブカテゴリー",
       "order": "表示順",
       "active": "有効",
       "save": "保存",
@@ -130,6 +131,7 @@
       "address": "住所",
       "phone": "電話番号",
       "email": "メールアドレス",
+      "googleMapsUrl": "Google Mapsリンク",
       "instagram": "Instagram",
       "facebook": "Facebook",
       "save": "保存"

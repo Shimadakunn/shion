@@ -4,6 +4,8 @@ import { useTranslations } from "next-intl";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { CalendarDays, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -53,11 +55,11 @@ export default function AdminReservationsPage() {
     (r) => r.date === selectedDate,
   ) ?? [];
 
-  const statusColors: Record<string, string> = {
-    confirmed: "text-green-600",
-    cancelled: "text-red-500",
-    no_show: "text-orange-500",
-    completed: "text-muted-foreground",
+  const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+    confirmed: "default",
+    cancelled: "destructive",
+    no_show: "destructive",
+    completed: "secondary",
   };
 
   function handleStatusChange(
@@ -74,24 +76,20 @@ export default function AdminReservationsPage() {
           {t("title")}
         </h1>
         <div className="flex gap-1">
-          <button
+          <Button
+            variant={view === "list" ? "default" : "ghost"}
+            size="icon-sm"
             onClick={() => setView("list")}
-            className={cn(
-              "p-2 transition-colors",
-              view === "list" ? "text-foreground" : "text-muted-foreground",
-            )}
           >
             <List className="h-4 w-4" />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={view === "calendar" ? "default" : "ghost"}
+            size="icon-sm"
             onClick={() => setView("calendar")}
-            className={cn(
-              "p-2 transition-colors",
-              view === "calendar" ? "text-foreground" : "text-muted-foreground",
-            )}
           >
             <CalendarDays className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -104,22 +102,18 @@ export default function AdminReservationsPage() {
           const count = reservations?.filter((r) => r.date === date && r.status === "confirmed").length ?? 0;
 
           return (
-            <button
+            <Button
               key={date}
+              variant={date === selectedDate ? "default" : "outline"}
               onClick={() => setSelectedDate(date)}
-              className={cn(
-                "flex flex-1 flex-col items-center gap-1 border p-3 transition-colors",
-                date === selectedDate
-                  ? "border-foreground bg-foreground/5"
-                  : "border-border hover:border-foreground/30",
-              )}
+              className="flex flex-1 flex-col items-center gap-1 h-auto py-3"
             >
-              <span className="text-muted-foreground text-xs">{dayLabel}</span>
+              <span className="text-xs opacity-70">{dayLabel}</span>
               <span className="text-sm font-medium">{dayNum}</span>
               {count > 0 && (
-                <span className="text-primary text-xs">{count}</span>
+                <span className="text-xs">{count}</span>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -141,9 +135,9 @@ export default function AdminReservationsPage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-3">
                     <span className="font-medium">{r.name}</span>
-                    <span className={cn("text-xs font-medium uppercase", statusColors[r.status])}>
+                    <Badge variant={statusVariant[r.status] ?? "secondary"}>
                       {t(r.status as "confirmed" | "cancelled" | "noShow" | "completed")}
-                    </span>
+                    </Badge>
                   </div>
                   <div className="text-muted-foreground flex gap-4 text-sm">
                     <span>{r.time}</span>
@@ -164,7 +158,7 @@ export default function AdminReservationsPage() {
                       e.target.value as "confirmed" | "cancelled" | "no_show" | "completed",
                     )
                   }
-                  className="border-border border bg-transparent px-2 py-1 text-xs"
+                  className="border-input border bg-transparent px-2 py-1 text-xs"
                 >
                   <option value="confirmed">{t("confirmed")}</option>
                   <option value="cancelled">{t("cancelled")}</option>

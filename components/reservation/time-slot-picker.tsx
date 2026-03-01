@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 type ServiceSlots = {
   name: string;
@@ -29,24 +29,18 @@ export function TimeSlotPicker({ services, value, onChange }: Props) {
                 value?.service === svc.name && value?.time === slot.time;
 
               return (
-                <button
+                <Button
                   key={`${svc.name}-${slot.time}`}
+                  variant={isSelected ? "default" : "outline"}
+                  size="sm"
                   disabled={!slot.available}
                   onClick={() =>
                     onChange({ service: svc.name, time: slot.time })
                   }
-                  className={cn(
-                    "px-4 py-2 text-sm transition-colors",
-                    !slot.available &&
-                      "text-muted-foreground/30 cursor-not-allowed line-through",
-                    slot.available &&
-                      !isSelected &&
-                      "border border-border text-muted-foreground hover:border-foreground hover:text-foreground",
-                    isSelected && "bg-foreground text-background",
-                  )}
+                  className={!slot.available ? "line-through" : ""}
                 >
                   {slot.time}
-                </button>
+                </Button>
               );
             })}
           </div>

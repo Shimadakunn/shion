@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
@@ -59,21 +60,15 @@ export function DatePicker({ value, onChange }: Props) {
     <div className="w-full max-w-sm">
       {/* Month navigation */}
       <div className="mb-4 flex items-center justify-between">
-        <button
-          onClick={prevMonth}
-          className="text-muted-foreground hover:text-foreground p-1 transition-colors"
-        >
+        <Button variant="ghost" size="icon-sm" onClick={prevMonth}>
           <ChevronLeft className="h-4 w-4" />
-        </button>
+        </Button>
         <span className="text-sm font-medium">
           {monthNames[viewMonth]} {viewYear}
         </span>
-        <button
-          onClick={nextMonth}
-          className="text-muted-foreground hover:text-foreground p-1 transition-colors"
-        >
+        <Button variant="ghost" size="icon-sm" onClick={nextMonth}>
           <ChevronRight className="h-4 w-4" />
-        </button>
+        </Button>
       </div>
 
       {/* Day headers */}
@@ -98,19 +93,18 @@ export function DatePicker({ value, onChange }: Props) {
           const isSelected = value === dateStr;
 
           return (
-            <button
+            <Button
               key={dateStr}
+              variant={isSelected ? "default" : "ghost"}
+              size="icon"
               disabled={isPast}
               onClick={() => onChange(dateStr)}
               className={cn(
-                "flex h-10 items-center justify-center text-sm transition-colors",
-                isPast && "text-muted-foreground/30 cursor-not-allowed",
-                !isPast && !isSelected && "hover:bg-accent",
-                isSelected && "bg-foreground text-background",
+                isPast && "text-muted-foreground/30",
               )}
             >
               {day}
-            </button>
+            </Button>
           );
         })}
       </div>
