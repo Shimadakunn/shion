@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+reservation calendar
+menu editable
 
-## Getting Started
+I want to create a luxurious restaurant website with a modern design.
+The website should be on one page and responsive.
 
-First, run the development server:
+Header
+Hero
+Menu
+Footer
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Need to have an admin panel to edit the menu and the reservation calendar.
+use convex for database and functions.
+for the menu, separated between lunch and dinner.
+have categories: menu, entrees, plats, desserts.
+for each have name , description, price.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+for the reservation it should be on a dedicated page.
+should looks like this:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Number of people
+Date
+Time
+Reserve button
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+and then user should enter his name, email, phone number and confirm the reservation.
+and have an admin view to see all the reservations and the details.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+create a plan and brainstorm with me and do not stop asking me questions until I told you to stop.
