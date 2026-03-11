@@ -8,12 +8,14 @@
  * @module
  */
 
+import type * as categories from "../categories.js";
+import type * as emails from "../emails.js";
 import type * as formules from "../formules.js";
 import type * as menu from "../menu.js";
 import type * as reservations from "../reservations.js";
 import type * as schedule from "../schedule.js";
-import type * as seed from "../seed.js";
 import type * as settings from "../settings.js";
+import type * as subcategories from "../subcategories.js";
 
 import type {
   ApiFromModules,
@@ -22,12 +24,14 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  categories: typeof categories;
+  emails: typeof emails;
   formules: typeof formules;
   menu: typeof menu;
   reservations: typeof reservations;
   schedule: typeof schedule;
-  seed: typeof seed;
   settings: typeof settings;
+  subcategories: typeof subcategories;
 }>;
 
 /**

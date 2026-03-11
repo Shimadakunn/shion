@@ -32,7 +32,7 @@ export const getAvailableSlots = query({
       .collect();
 
     const activeReservations = reservations.filter(
-      (r) => r.status === "confirmed",
+      (r) => r.status === "confirmed" || r.status === "pending",
     );
 
     // Generate 15-minute slots for each service
@@ -83,13 +83,12 @@ export const create = mutation({
     partySize: v.number(),
     name: v.string(),
     email: v.string(),
-    phone: v.string(),
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("reservations", {
       ...args,
-      status: "confirmed",
+      status: "pending",
     });
   },
 });
@@ -122,6 +121,7 @@ export const updateStatus = mutation({
   args: {
     id: v.id("reservations"),
     status: v.union(
+      v.literal("pending"),
       v.literal("confirmed"),
       v.literal("cancelled"),
       v.literal("no_show"),
@@ -141,11 +141,11 @@ export const update = mutation({
     service: v.optional(v.string()),
     partySize: v.optional(v.number()),
     name: v.optional(v.string()),
-    email: v.optional(v.string()),
-    phone: v.optional(v.string()),
     notes: v.optional(v.string()),
+    email: v.optional(v.string()),
     status: v.optional(
       v.union(
+        v.literal("pending"),
         v.literal("confirmed"),
         v.literal("cancelled"),
         v.literal("no_show"),
@@ -167,5 +167,12 @@ export const remove = mutation({
   args: { id: v.id("reservations") },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.id);
+  },
+});
+
+export const getById = query({
+  args: { id: v.id("reservations") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
   },
 });

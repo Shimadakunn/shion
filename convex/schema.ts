@@ -8,12 +8,22 @@ const trilingualText = {
 };
 
 export default defineSchema({
+  categories: defineTable({
+    name: v.object(trilingualText),
+    order: v.number(),
+    isActive: v.optional(v.boolean()),
+  }).index("by_order", ["order"]),
+
+  subcategories: defineTable({
+    name: v.object(trilingualText),
+    category: v.id("categories"),
+    order: v.number(),
+    isActive: v.optional(v.boolean()),
+  })
+    .index("by_category", ["category"])
+    .index("by_order", ["order"]),
+
   menuItems: defineTable({
-    category: v.union(
-      v.literal("entrees"),
-      v.literal("plats"),
-      v.literal("desserts"),
-    ),
     service: v.union(
       v.literal("lunch"),
       v.literal("dinner"),
@@ -24,7 +34,8 @@ export default defineSchema({
     price: v.number(),
     order: v.number(),
     isActive: v.boolean(),
-    subcategory: v.optional(v.string()),
+    category: v.id("categories"),
+    subcategory: v.optional(v.id("subcategories")),
   })
     .index("by_category", ["category"])
     .index("by_service", ["service"])
@@ -82,8 +93,9 @@ export default defineSchema({
     partySize: v.number(),
     name: v.string(),
     email: v.string(),
-    phone: v.string(),
+    phone: v.optional(v.string()),
     status: v.union(
+      v.literal("pending"),
       v.literal("confirmed"),
       v.literal("cancelled"),
       v.literal("no_show"),
@@ -99,6 +111,7 @@ export default defineSchema({
     address: v.string(),
     phone: v.string(),
     email: v.string(),
+    reservationEmail: v.optional(v.string()),
     googleMapsUrl: v.optional(v.string()),
     socialLinks: v.optional(
       v.object({

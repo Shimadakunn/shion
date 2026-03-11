@@ -34,11 +34,6 @@ export const getAll = query({
 
 export const create = mutation({
   args: {
-    category: v.union(
-      v.literal("entrees"),
-      v.literal("plats"),
-      v.literal("desserts"),
-    ),
     service: v.union(
       v.literal("lunch"),
       v.literal("dinner"),
@@ -47,25 +42,20 @@ export const create = mutation({
     name: v.object(trilingualText),
     description: v.object(trilingualText),
     price: v.number(),
-    order: v.number(),
     isActive: v.boolean(),
-    subcategory: v.optional(v.string()),
+    category: v.id("categories"),
+    subcategory: v.optional(v.id("subcategories")),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert("menuItems", args);
+    const all = await ctx.db.query("menuItems").collect();
+    const maxOrder = all.reduce((max, item) => Math.max(max, item.order), -1);
+    return await ctx.db.insert("menuItems", { ...args, order: maxOrder + 1 });
   },
 });
 
 export const update = mutation({
   args: {
     id: v.id("menuItems"),
-    category: v.optional(
-      v.union(
-        v.literal("entrees"),
-        v.literal("plats"),
-        v.literal("desserts"),
-      ),
-    ),
     service: v.optional(
       v.union(
         v.literal("lunch"),
@@ -78,7 +68,8 @@ export const update = mutation({
     price: v.optional(v.number()),
     order: v.optional(v.number()),
     isActive: v.optional(v.boolean()),
-    subcategory: v.optional(v.string()),
+    category: v.optional(v.id("categories")),
+    subcategory: v.optional(v.id("subcategories")),
   },
   handler: async (ctx, args) => {
     const { id, ...fields } = args;
@@ -94,5 +85,27 @@ export const remove = mutation({
   args: { id: v.id("menuItems") },
   handler: async (ctx, args) => {
     await ctx.db.delete(args.id);
+  },
+});
+
+export const reorder = mutation({
+  args: {
+    items: v.array(
+      v.object({
+        id: v.id("menuItems"),
+        order: v.number(),
+        category: v.id("categories"),
+        subcategory: v.optional(v.id("subcategories")),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    for (const item of args.items) {
+      await ctx.db.patch(item.id, {
+        order: item.order,
+        category: item.category,
+        subcategory: item.subcategory,
+      });
+    }
   },
 });

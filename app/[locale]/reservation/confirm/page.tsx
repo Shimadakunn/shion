@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useMutation } from "convex/react";
+import { useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -15,6 +15,7 @@ export default function ConfirmPage() {
   const t = useTranslations("confirm");
   const searchParams = useSearchParams();
   const createReservation = useMutation(api.reservations.create);
+  const sendEmails = useAction(api.emails.sendNewReservationEmails);
 
   const guests = Number(searchParams.get("guests") ?? 2);
   const date = searchParams.get("date") ?? "";
@@ -23,7 +24,6 @@ export default function ConfirmPage() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -33,16 +33,18 @@ export default function ConfirmPage() {
     if (submitting) return;
     setSubmitting(true);
 
-    await createReservation({
+    const reservationId = await createReservation({
       date,
       time,
       service,
       partySize: guests,
       name,
       email,
-      phone,
       notes: notes || undefined,
     });
+
+    // Send emails in background — don't block the user
+    sendEmails({ reservationId }).catch(() => {});
 
     setConfirmed(true);
     setSubmitting(false);
@@ -56,7 +58,7 @@ export default function ConfirmPage() {
             {t("success")}
           </h1>
           <p className="text-muted-foreground mb-8 text-sm">
-            {t("successMessage", { email })}
+            {t("successMessage")}
           </p>
           <Link
             href="/"
@@ -119,18 +121,6 @@ export default function ConfirmPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-
-        <div>
-          <Label className="mb-2 tracking-wider uppercase">
-            {t("phone")}
-          </Label>
-          <Input
-            type="tel"
-            required
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
           />
         </div>
 

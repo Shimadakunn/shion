@@ -1,28 +1,121 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useState } from "react";
-import { MenuItemForm } from "@/components/admin/menu-item-form";
-import { FormuleForm } from "@/components/admin/formule-form";
+import { useState, useMemo } from "react";
+import { MenuItemForm } from "@/components/admin/menu/menu-item-form";
+import { FormuleForm } from "@/components/admin/menu/formule-form";
+import { CategoryForm } from "@/components/admin/menu/category-form";
+import { SubcategoryForm } from "@/components/admin/menu/subcategory-form";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import type { Id } from "@/convex/_generated/dataModel";
+import { DndContext, DragOverlay, closestCorners } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useMenuDnd } from "@/components/admin/menu/use-menu-dnd";
+import { SortableCategorySection } from "@/components/admin/menu/sortable-category-section";
+import { FormulesList } from "@/components/admin/menu/formules-list";
+import {
+  ItemDragOverlay,
+  CategoryDragOverlay,
+  SubcategoryDragOverlay,
+} from "@/components/admin/menu/drag-overlays";
+import {
+  MenuFilters,
+  EMPTY_FILTERS,
+  hasActiveFilters,
+  type MenuFilterState,
+} from "@/components/admin/menu/menu-filters";
+import type { MenuItem, SubcategoryItem } from "@/components/admin/menu/types";
 
 export default function AdminMenuPage() {
-  const t = useTranslations("admin.menuEditor");
   const items = useQuery(api.menu.getAll);
   const formules = useQuery(api.formules.getAll);
+  const categories = useQuery(api.categories.getAll);
+  const subcategories = useQuery(api.subcategories.getAll);
+
   const removeItem = useMutation(api.menu.remove);
   const removeFormule = useMutation(api.formules.remove);
+  const removeCategory = useMutation(api.categories.remove);
+  const updateCategory = useMutation(api.categories.update);
+  const reorderItems = useMutation(api.menu.reorder);
+  const reorderCategories = useMutation(api.categories.reorder);
+  const reorderSubcategories = useMutation(api.subcategories.reorder);
+  const removeSubcategory = useMutation(api.subcategories.remove);
+  const updateSubcategory = useMutation(api.subcategories.update);
+  const updateItem = useMutation(api.menu.update);
 
-  const [editingItem, setEditingItem] = useState<Id<"menuItems"> | "new" | null>(null);
+  // Editing state
+  const [editingItem, setEditingItem] = useState<
+    | Id<"menuItems">
+    | { new: true; categoryId: Id<"categories">; subcategoryId?: Id<"subcategories"> }
+    | null
+  >(null);
   const [editingFormule, setEditingFormule] = useState<Id<"formules"> | "new" | null>(null);
+  const [editingCategory, setEditingCategory] = useState<Id<"categories"> | "new" | null>(null);
+  const [editingSubcategory, setEditingSubcategory] = useState<
+    { id: Id<"subcategories"> } | { newForCategory: Id<"categories"> } | null
+  >(null);
+  const [filters, setFilters] = useState<MenuFilterState>(EMPTY_FILTERS);
 
+  const {
+    localItems,
+    localCategories,
+    localSubcategories,
+    sensors,
+    hierarchy,
+    categorySortableIds,
+    activeItem,
+    activeCategoryItem,
+    activeSubcategoryItem,
+    handleDragStart,
+    handleDragOver,
+    handleDragEnd,
+  } = useMenuDnd({
+    items,
+    categories,
+    subcategories,
+    reorderItems,
+    reorderCategories,
+    reorderSubcategories,
+  });
+
+  const isFiltering = hasActiveFilters(filters);
+  const filteredHierarchy = useMemo(() => {
+    if (!isFiltering) return hierarchy;
+
+    return hierarchy
+      .filter((entry) =>
+        filters.categories.size === 0 || filters.categories.has(entry.category._id)
+      )
+      .map((entry) => {
+        let filteredItems = entry.items;
+        if (filters.services.size > 0)
+          filteredItems = filteredItems.filter((i) => filters.services.has(i.service));
+
+        let filteredSubs = entry.subcategories;
+        if (filters.subcategories.size > 0)
+          filteredSubs = filteredSubs.filter((s) => filters.subcategories.has(s._id));
+
+        // When filtering by subcategory, also filter items to only show matching subcategories
+        if (filters.subcategories.size > 0)
+          filteredItems = filteredItems.filter(
+            (i) => !i.subcategory || filters.subcategories.has(i.subcategory)
+          );
+
+        return { ...entry, items: filteredItems, subcategories: filteredSubs };
+      })
+      .filter((entry) => entry.items.length > 0 || entry.subcategories.length > 0);
+  }, [hierarchy, filters, isFiltering]);
+
+  const filteredItemCount = useMemo(
+    () => filteredHierarchy.reduce((sum, entry) => sum + entry.items.length, 0),
+    [filteredHierarchy],
+  );
+
+  // Derived form data
   const currentItem =
-    editingItem && editingItem !== "new"
+    editingItem && typeof editingItem === "string"
       ? items?.find((i) => i._id === editingItem)
       : undefined;
 
@@ -31,131 +124,220 @@ export default function AdminMenuPage() {
       ? formules?.find((f) => f._id === editingFormule)
       : undefined;
 
+  const currentCategory =
+    editingCategory && editingCategory !== "new"
+      ? categories?.find((c) => c._id === editingCategory)
+      : undefined;
+
+  const currentSubcategory =
+    editingSubcategory && "id" in editingSubcategory
+      ? subcategories?.find((s) => s._id === editingSubcategory.id)
+      : undefined;
+
+  async function handleRemoveCategory(id: Id<"categories">) {
+    try {
+      await removeCategory({ id });
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Cannot delete");
+    }
+  }
+
+  async function handleRemoveSubcategory(id: Id<"subcategories">) {
+    try {
+      await removeSubcategory({ id });
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Cannot delete");
+    }
+  }
+
   return (
     <div>
       <h1 className="mb-8 text-xl font-light tracking-[0.2em] uppercase">
-        {t("title")}
+        Menu management
       </h1>
 
-      {/* Menu items section */}
+      {/* Plates section */}
       <div className="mb-12">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-medium tracking-wider uppercase">
-            Plats
-          </h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setEditingItem("new")}
-          >
-            <Plus className="h-4 w-4" />
-            {t("addItem")}
-          </Button>
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-sm font-medium tracking-wider uppercase">Plates</h2>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="text-xs text-muted-foreground">
+              {isFiltering
+                ? `${filteredItemCount} / ${localItems.length} plate(s)`
+                : `${localItems.length} plate(s)`}
+            </span>
+            <MenuFilters
+              filters={filters}
+              onChange={setFilters}
+              categories={localCategories}
+              subcategories={localSubcategories}
+            />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setEditingCategory("new")}
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Add category</span>
+            </Button>
+          </div>
         </div>
 
-        {editingItem && (
-          <div className="mb-6">
-            <MenuItemForm
-              item={currentItem}
-              onClose={() => setEditingItem(null)}
-            />
-          </div>
+        <p className="mb-4 text-xs text-muted-foreground">
+          Drag to reorder categories, subcategories and plates
+        </p>
+
+        <MenuItemForm
+          key={editingItem ? String(editingItem) : "closed-item"}
+          item={currentItem}
+          defaultCategoryId={
+            editingItem && typeof editingItem === "object"
+              ? editingItem.categoryId
+              : undefined
+          }
+          defaultSubcategoryId={
+            editingItem && typeof editingItem === "object"
+              ? editingItem.subcategoryId
+              : undefined
+          }
+          open={editingItem !== null}
+          onOpenChange={(open) => {
+            if (!open) setEditingItem(null);
+          }}
+        />
+
+        <CategoryForm
+          key={editingCategory ? String(editingCategory) : "closed-cat"}
+          category={currentCategory}
+          open={editingCategory !== null}
+          onOpenChange={(open) => {
+            if (!open) setEditingCategory(null);
+          }}
+          onDelete={
+            currentCategory
+              ? () => {
+                  handleRemoveCategory(currentCategory._id);
+                  setEditingCategory(null);
+                }
+              : undefined
+          }
+        />
+
+        <SubcategoryForm
+          key={editingSubcategory ? JSON.stringify(editingSubcategory) : "closed-sub"}
+          subcategory={currentSubcategory}
+          defaultCategoryId={
+            editingSubcategory && "newForCategory" in editingSubcategory
+              ? editingSubcategory.newForCategory
+              : undefined
+          }
+          open={editingSubcategory !== null}
+          onOpenChange={(open) => {
+            if (!open) setEditingSubcategory(null);
+          }}
+          onDelete={
+            currentSubcategory
+              ? () => {
+                  handleRemoveSubcategory(currentSubcategory._id);
+                  setEditingSubcategory(null);
+                }
+              : undefined
+          }
+        />
+
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={categorySortableIds}
+            strategy={verticalListSortingStrategy}
+          >
+            {filteredHierarchy.map(({ category, subcategories: subs, items: catItems }) => (
+              <SortableCategorySection
+                key={category._id}
+                category={category}
+                subcategories={subs}
+                items={catItems}
+                onEditItem={(id) => setEditingItem(id)}
+                onRemoveItem={(id) => removeItem({ id })}
+                onToggleItemActive={(item: MenuItem) =>
+                  updateItem({ id: item._id, isActive: !item.isActive })
+                }
+                onEditCategory={() => setEditingCategory(category._id)}
+                onToggleActive={() =>
+                  updateCategory({
+                    id: category._id,
+                    isActive: category.isActive === false,
+                  })
+                }
+                onAddItem={() =>
+                  setEditingItem({ new: true, categoryId: category._id })
+                }
+                onAddItemToSubcategory={(subId) =>
+                  setEditingItem({
+                    new: true,
+                    categoryId: category._id,
+                    subcategoryId: subId,
+                  })
+                }
+                onAddSubcategory={() =>
+                  setEditingSubcategory({ newForCategory: category._id })
+                }
+                onEditSubcategory={(id) => setEditingSubcategory({ id })}
+                onToggleSubcategoryActive={(sub: SubcategoryItem) =>
+                  updateSubcategory({
+                    id: sub._id,
+                    isActive: sub.isActive === false,
+                  })
+                }
+              />
+            ))}
+          </SortableContext>
+
+          <DragOverlay>
+            {activeItem ? <ItemDragOverlay item={activeItem} /> : null}
+            {activeCategoryItem ? (
+              <CategoryDragOverlay category={activeCategoryItem} />
+            ) : null}
+            {activeSubcategoryItem ? (
+              <SubcategoryDragOverlay subcategory={activeSubcategoryItem} />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+
+        {isFiltering && filteredHierarchy.length === 0 && (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            No plates match the current filters.
+          </p>
         )}
 
-        <div className="space-y-2">
-          {items?.map((item) => (
-            <div
-              key={item._id}
-              className="flex items-center justify-between border border-border p-4"
-            >
-              <div className="flex items-center gap-3">
-                <span className={item.isActive ? "" : "text-muted-foreground line-through"}>
-                  {item.name.fr}
-                </span>
-                <Badge variant="outline">{item.category}</Badge>
-                {item.subcategory && <Badge variant="outline">{item.subcategory}</Badge>}
-                <Badge variant="secondary">{item.service}</Badge>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm">{item.price}€</span>
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  onClick={() => setEditingItem(item._id)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="icon-xs"
-                  onClick={() => removeItem({ id: item._id })}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+        {!isFiltering && categories && localCategories.length === 0 && localItems.length === 0 && (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            No categories yet. Add a category to get started.
+          </p>
+        )}
       </div>
 
       {/* Formules section */}
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-medium tracking-wider uppercase">
-            Formules
-          </h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setEditingFormule("new")}
-          >
-            <Plus className="h-4 w-4" />
-            {t("addFormule")}
-          </Button>
-        </div>
+      <FormuleForm
+        key={editingFormule ? String(editingFormule) : "closed-formule"}
+        formule={currentFormule}
+        open={editingFormule !== null}
+        onOpenChange={(open) => {
+          if (!open) setEditingFormule(null);
+        }}
+      />
 
-        {editingFormule && (
-          <div className="mb-6">
-            <FormuleForm
-              formule={currentFormule}
-              onClose={() => setEditingFormule(null)}
-            />
-          </div>
-        )}
-
-        <div className="space-y-2">
-          {formules?.map((f) => (
-            <div
-              key={f._id}
-              className="flex items-center justify-between border border-border p-4"
-            >
-              <div className="flex items-center gap-3">
-                <span className={f.isActive ? "" : "text-muted-foreground line-through"}>
-                  {f.name.fr}
-                </span>
-                <Badge variant="secondary">{f.service}</Badge>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm">{f.price}€</span>
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  onClick={() => setEditingFormule(f._id)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="icon-xs"
-                  onClick={() => removeFormule({ id: f._id })}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <FormulesList
+        formules={formules}
+        onAdd={() => setEditingFormule("new")}
+        onEdit={(id) => setEditingFormule(id)}
+        onRemove={(id) => removeFormule({ id })}
+      />
     </div>
   );
 }

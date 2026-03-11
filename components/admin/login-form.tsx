@@ -1,6 +1,5 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { login } from "@/lib/admin-auth";
 import { useRouter } from "next/navigation";
@@ -9,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function LoginForm() {
-  const t = useTranslations("admin.login");
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
@@ -33,13 +31,13 @@ export function LoginForm() {
     <div className="flex min-h-screen items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <h1 className="mb-8 text-center text-lg font-semibold tracking-[0.3em] uppercase">
-          {t("title")}
+          Administration
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label className="mb-2 tracking-wider uppercase">
-              {t("password")}
+              Password
             </Label>
             <Input
               type="password"
@@ -50,11 +48,11 @@ export function LoginForm() {
           </div>
 
           {error && (
-            <p className="text-destructive text-sm">{t("error")}</p>
+            <p className="text-destructive text-sm">Incorrect password</p>
           )}
 
           <Button type="submit" disabled={loading} className="w-full">
-            {t("submit")}
+            Sign in
           </Button>
         </form>
       </div>
