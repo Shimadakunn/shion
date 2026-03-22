@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button";
 import { FadeIn } from "./motion";
 import type { Id } from "@/convex/_generated/dataModel";
 import Image from "next/image";
-
-const MENU_IMAGE = "kg25a95k663p6cbgtrzxe2gd3n83abb3" as Id<"_storage">;
+import { storageIds } from "@/lib/storage-ids";
 
 type Service = "lunch" | "dinner";
 type Locale = "fr" | "en" | "jp";
@@ -18,7 +17,7 @@ export function Menu() {
   const t = useTranslations("menu");
   const locale = useLocale() as Locale;
   const [service, setService] = useState<Service>("lunch");
-  const imageUrl = useQuery(api.files.getUrl, { storageId: MENU_IMAGE });
+  const imageUrl = useQuery(api.files.getUrl, { storageId: storageIds.menu });
 
   const items = useQuery(api.menu.getActiveItems, { service });
   const categories = useQuery(api.categories.getActive);

@@ -22,7 +22,7 @@ export function FloatingCTA() {
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full">
       <div className="absolute inset-0 bg-linear-to-t from-black to-transparent pointer-events-none" />
-      <div className="relative flex items-center justify-center gap-2 pb-8 pt-48">
+      <div className="relative flex items-center justify-center gap-2 pb-4 pt-24">
         <a href="#menu" className={iconBtn} aria-label={t("menu")}>
           <UtensilsCrossed className="size-5" />
         </a>

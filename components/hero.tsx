@@ -3,13 +3,10 @@
 import { useTranslations } from "next-intl";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-
-const HERO_IMAGE_DESKTOP = "kg29mm3pg2vae8n8tjv0b8hbf183a01w" as Id<"_storage">;
-const HERO_IMAGE_MOBILE = "kg2b6hfwksgp3s1abjybscx14183bkr2" as Id<"_storage">;
+import { storageIds } from "@/lib/storage-ids";
 
 const stagger = {
   hidden: {},
@@ -25,10 +22,10 @@ export function Hero() {
   const t = useTranslations("hero");
   const tCta = useTranslations("cta");
   const desktopImageUrl = useQuery(api.files.getUrl, {
-    storageId: HERO_IMAGE_DESKTOP,
+    storageId: storageIds.heroDesktop,
   });
   const mobileImageUrl = useQuery(api.files.getUrl, {
-    storageId: HERO_IMAGE_MOBILE,
+    storageId: storageIds.heroMobile,
   });
 
   return (

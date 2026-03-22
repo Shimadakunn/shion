@@ -3,15 +3,13 @@
 import { useTranslations } from "next-intl";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
 import Image from "next/image";
-
-const FOOTER_IMAGE = "kg20pb1p3e15kf8j30dq4jq1cx83d3zc" as Id<"_storage">;
+import { storageIds } from "@/lib/storage-ids";
 
 export function Footer() {
   const t = useTranslations("footer");
   const settings = useQuery(api.settings.get);
-  const imageUrl = useQuery(api.files.getUrl, { storageId: FOOTER_IMAGE });
+  const imageUrl = useQuery(api.files.getUrl, { storageId: storageIds.footer });
 
   return (
     <footer className="relative px-6 py-20">
