@@ -11,8 +11,25 @@
   "menu": {
     "title": "Notre Carte",
     "lunch": "Le Midi",
-    "dinner": "Le Soir",
-    "formules": "Formules"
+    "dinner": "Le Soir"
+  },
+  "schedule": {
+    "title": "Horaires",
+    "closed": "Fermé",
+    "lunch": "Déjeuner",
+    "dinner": "Dîner",
+    "days": {
+      "1": "Lundi",
+      "2": "Mardi",
+      "3": "Mercredi",
+      "4": "Jeudi",
+      "5": "Vendredi",
+      "6": "Samedi",
+      "0": "Dimanche"
+    },
+    "specialDates": "Dates exceptionnelles",
+    "specialClosed": "Fermeture exceptionnelle",
+    "specialOpen": "Ouverture exceptionnelle"
   },
   "footer": {
     "contact": "Contact",
@@ -22,7 +39,9 @@
     "rights": "Tous droits réservés"
   },
   "cta": {
-    "reserve": "Réserver une table"
+    "reserve": "Réserver",
+    "menu": "Carte",
+    "schedule": "Horaires"
   },
   "reservation": {
     "title": "Réservation",
@@ -52,6 +71,34 @@
     "guests": "{count, plural, one {# convive} other {# convives}}",
     "back": "Retour"
   },
+  "manage": {
+    "title": "Gérer votre réservation",
+    "status": "Statut",
+    "pending": "En attente de confirmation",
+    "confirmed": "Confirmée",
+    "cancelled": "Annulée",
+    "completed": "Terminée",
+    "no_show": "Non présenté",
+    "date": "Date",
+    "time": "Horaire",
+    "service": "Service",
+    "guests": "{count, plural, one {# convive} other {# convives}}",
+    "notes": "Notes",
+    "cancelReservation": "Annuler la réservation",
+    "cancelConfirm": "Êtes-vous sûr de vouloir annuler cette réservation ?",
+    "cancelYes": "Oui, annuler",
+    "cancelNo": "Non, conserver",
+    "cancelled_success": "Votre réservation a été annulée.",
+    "modifyReservation": "Modifier la réservation",
+    "modifyDescription": "Choisissez une nouvelle date, un nouvel horaire et le nombre de convives. Le restaurant devra confirmer la modification.",
+    "submitModification": "Soumettre la modification",
+    "modification_success": "Votre demande de modification a été envoyée. Le restaurant la confirmera sous peu.",
+    "notFound": "Réservation introuvable",
+    "notFoundMessage": "Ce lien a peut-être expiré ou est invalide.",
+    "backToHome": "Retour à l'accueil",
+    "pastReservation": "Cette réservation est passée et ne peut plus être modifiée.",
+    "alreadyCancelled": "Cette réservation a déjà été annulée."
+  },
   "admin": {
     "login": {
       "title": "Administration",
@@ -77,9 +124,7 @@
       "title": "Gestion de la carte",
       "itemsSection": "Plats",
       "addItem": "Ajouter un plat",
-      "addFormule": "Ajouter une formule",
       "editItem": "Modifier le plat",
-      "editFormule": "Modifier la formule",
       "edit": "Modifier",
       "name": "Nom",
       "description": "Description",

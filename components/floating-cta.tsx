@@ -2,38 +2,44 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { useEffect, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { MapPin } from "lucide-react";
+import { MapPin, UtensilsCrossed, Clock } from "lucide-react";
 
 export function FloatingCTA() {
   const t = useTranslations("cta");
   const settings = useQuery(api.settings.get);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    function onScroll() {
-      setVisible(window.scrollY > 400);
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const googleMapsUrl = settings?.googleMapsUrl;
 
+  const iconBtn = cn(
+    buttonVariants({ variant: "outline", size: "lg" }),
+    "shadow-lg px-3",
+  );
+
   return (
-    <div
-      className={cn(
-        "fixed bottom-8 left-1/2 z-50 -translate-x-1/2 transition-all duration-500",
-        visible
-          ? "translate-y-0 opacity-100"
-          : "translate-y-4 opacity-0 pointer-events-none",
-      )}
-    >
-      <div className="flex items-center gap-2">
+    <div className="fixed bottom-0 left-0 z-50 w-full">
+      <div className="absolute inset-0 bg-linear-to-t from-black to-transparent pointer-events-none" />
+      <div className="relative flex items-center justify-center gap-2 pb-8 pt-48">
+        <a href="#menu" className={iconBtn} aria-label={t("menu")}>
+          <UtensilsCrossed className="size-5" />
+        </a>
+        <a href="#schedule" className={iconBtn} aria-label={t("schedule")}>
+          <Clock className="size-5" />
+        </a>
+        {googleMapsUrl && (
+          <a
+            href={googleMapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={iconBtn}
+            aria-label="Google Maps"
+          >
+            <MapPin className="size-5" />
+          </a>
+        )}
         <Link
           href="/reservation"
           className={cn(
@@ -43,20 +49,6 @@ export function FloatingCTA() {
         >
           {t("reserve")}
         </Link>
-        {googleMapsUrl && (
-          <a
-            href={googleMapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(
-              buttonVariants({ variant: "outline", size: "lg" }),
-              "shadow-lg px-3",
-            )}
-            aria-label="Google Maps"
-          >
-            <MapPin className="size-5" />
-          </a>
-        )}
       </div>
     </div>
   );

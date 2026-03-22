@@ -26,7 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { Reservation, ReservationStatus } from "./types";
-import { STATUS_CONFIG, STATUS_LABELS, isLunchService } from "./constants";
+import { STATUS_CONFIG, isLunchService, getStatusConfig } from "./constants";
 
 type ReservationDetailProps = {
   reservation: Reservation | null;
@@ -41,8 +41,7 @@ export function ReservationDetail({
 }: ReservationDetailProps) {
   if (!r) return null;
 
-  const isCancelled = r.status === "cancelled" || r.status === "no_show";
-  const statusKey = r.status === "no_show" ? "noShow" : r.status;
+  const config = getStatusConfig(r.status);
 
   const dateObj = new Date(r.date);
   const dateLabel = dateObj.toLocaleDateString("fr-FR", {
@@ -55,7 +54,7 @@ export function ReservationDetail({
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="max-w-sm">
         <DialogTitle>
-          <span className={cn(isCancelled && "line-through opacity-60")}>
+          <span className={cn(config.dismissed && "line-through opacity-60")}>
             {r.name}
           </span>
         </DialogTitle>
@@ -64,11 +63,10 @@ export function ReservationDetail({
         </DialogDescription>
 
         <div className="mt-3 space-y-4">
-          <Badge
-            variant={STATUS_CONFIG[r.status]?.variant ?? "secondary"}
-          >
-            {STATUS_LABELS[statusKey]}
-          </Badge>
+          <div className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium border-l-2", config.border, config.bg, config.text)}>
+            <span className={cn("h-2 w-2 rounded-full", config.dot)} />
+            {config.label}
+          </div>
 
           {/* Date & Time */}
           <div className="space-y-2">
@@ -134,11 +132,14 @@ export function ReservationDetail({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-                <SelectItem value="no_show">No-show</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
+                {(Object.keys(STATUS_CONFIG) as Array<keyof typeof STATUS_CONFIG>).map((key) => (
+                  <SelectItem key={key} value={key}>
+                    <span className="inline-flex items-center gap-2">
+                      <span className={cn("h-2 w-2 rounded-full", STATUS_CONFIG[key].dot)} />
+                      {STATUS_CONFIG[key].label}
+                    </span>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

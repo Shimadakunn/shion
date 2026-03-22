@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useMutation, useAction } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -15,7 +15,7 @@ export default function ConfirmPage() {
   const t = useTranslations("confirm");
   const searchParams = useSearchParams();
   const createReservation = useMutation(api.reservations.create);
-  const sendEmails = useAction(api.emails.sendNewReservationEmails);
+  const sendEmails = useMutation(api.emails.sendNewReservationEmails);
 
   const guests = Number(searchParams.get("guests") ?? 2);
   const date = searchParams.get("date") ?? "";
@@ -33,7 +33,7 @@ export default function ConfirmPage() {
     if (submitting) return;
     setSubmitting(true);
 
-    const reservationId = await createReservation({
+    const { id: reservationId, managementToken } = await createReservation({
       date,
       time,
       service,
@@ -44,7 +44,7 @@ export default function ConfirmPage() {
     });
 
     // Send emails in background — don't block the user
-    sendEmails({ reservationId }).catch(() => {});
+    sendEmails({ reservationId, managementToken }).catch(() => {});
 
     setConfirmed(true);
     setSubmitting(false);

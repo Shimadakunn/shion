@@ -11,8 +11,25 @@
   "menu": {
     "title": "Our Menu",
     "lunch": "Lunch",
+    "dinner": "Dinner"
+  },
+  "schedule": {
+    "title": "Opening Hours",
+    "closed": "Closed",
+    "lunch": "Lunch",
     "dinner": "Dinner",
-    "formules": "Set Menus"
+    "days": {
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday",
+      "0": "Sunday"
+    },
+    "specialDates": "Special dates",
+    "specialClosed": "Exceptionally closed",
+    "specialOpen": "Exceptionally open"
   },
   "footer": {
     "contact": "Contact",
@@ -22,7 +39,9 @@
     "rights": "All rights reserved"
   },
   "cta": {
-    "reserve": "Reserve a table"
+    "reserve": "Reserve",
+    "menu": "Menu",
+    "schedule": "Hours"
   },
   "reservation": {
     "title": "Reservation",
@@ -52,6 +71,34 @@
     "guests": "{count, plural, one {# guest} other {# guests}}",
     "back": "Back"
   },
+  "manage": {
+    "title": "Manage your reservation",
+    "status": "Status",
+    "pending": "Pending confirmation",
+    "confirmed": "Confirmed",
+    "cancelled": "Cancelled",
+    "completed": "Completed",
+    "no_show": "No-show",
+    "date": "Date",
+    "time": "Time",
+    "service": "Service",
+    "guests": "{count, plural, one {# guest} other {# guests}}",
+    "notes": "Notes",
+    "cancelReservation": "Cancel reservation",
+    "cancelConfirm": "Are you sure you want to cancel this reservation?",
+    "cancelYes": "Yes, cancel",
+    "cancelNo": "No, keep it",
+    "cancelled_success": "Your reservation has been cancelled.",
+    "modifyReservation": "Modify reservation",
+    "modifyDescription": "Choose a new date, time, and number of guests. The restaurant will need to confirm the change.",
+    "submitModification": "Submit modification request",
+    "modification_success": "Your modification request has been submitted. The restaurant will confirm shortly.",
+    "notFound": "Reservation not found",
+    "notFoundMessage": "This link may have expired or is invalid.",
+    "backToHome": "Back to home",
+    "pastReservation": "This reservation is in the past and cannot be modified.",
+    "alreadyCancelled": "This reservation has already been cancelled."
+  },
   "admin": {
     "login": {
       "title": "Administration",
@@ -77,9 +124,7 @@
       "title": "Menu management",
       "itemsSection": "Items",
       "addItem": "Add item",
-      "addFormule": "Add set menu",
       "editItem": "Edit item",
-      "editFormule": "Edit set menu",
       "edit": "Edit",
       "name": "Name",
       "description": "Description",

@@ -28,12 +28,13 @@ export function ServiceRow({ service, onUpdate, onRemove }: ServiceRowProps) {
   const availableCloseTimes = TIME_SLOTS.filter((t) => t > service.openTime);
 
   return (
-    <div className="flex items-center gap-3 text-sm">
+    <div className="space-y-2 text-sm">
+      {/* Line 1: Service name */}
       <Select
         value={service.name}
         onValueChange={(val) => { if (val) onUpdate("name", val); }}
       >
-        <SelectTrigger className="w-28">
+        <SelectTrigger className="w-[6.5rem]">
           <SelectValue>
             {(value: string) => <ServiceNameDisplay value={value} />}
           </SelectValue>
@@ -44,52 +45,55 @@ export function ServiceRow({ service, onUpdate, onRemove }: ServiceRowProps) {
         </SelectContent>
       </Select>
 
-      <Select
-        value={service.openTime}
-        onValueChange={(val) => { if (val) onUpdate("openTime", val); }}
-      >
-        <SelectTrigger className="w-24">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {TIME_SLOTS.map((t) => (
-            <SelectItem key={t} value={t}>{t}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/* Line 2: Hours + covers + delete */}
+      <div className="flex items-center gap-2">
+        <Select
+          value={service.openTime}
+          onValueChange={(val) => { if (val) onUpdate("openTime", val); }}
+        >
+          <SelectTrigger className="w-[4.5rem]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TIME_SLOTS.map((t) => (
+              <SelectItem key={t} value={t}>{t}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <span className="text-muted-foreground">—</span>
+        <span className="text-muted-foreground">—</span>
 
-      <Select
-        value={service.closeTime}
-        onValueChange={(val) => { if (val) onUpdate("closeTime", val); }}
-      >
-        <SelectTrigger className="w-24">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {availableCloseTimes.map((t) => (
-            <SelectItem key={t} value={t}>{t}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <Select
+          value={service.closeTime}
+          onValueChange={(val) => { if (val) onUpdate("closeTime", val); }}
+        >
+          <SelectTrigger className="w-[4.5rem]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {availableCloseTimes.map((t) => (
+              <SelectItem key={t} value={t}>{t}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Users className="h-3.5 w-3.5 text-muted-foreground" />
-      <Input
-        type="number"
-        value={service.maxCovers}
-        onChange={(e) => onUpdate("maxCovers", Number(e.target.value))}
-        className="w-16"
-      />
-
-      <Button
-        variant="destructive"
-        size="icon-xs"
-        onClick={onRemove}
-        className="ml-auto"
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-      </Button>
+        <div className="flex items-center gap-2 ml-auto">
+          <Users className="h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            type="number"
+            value={service.maxCovers}
+            onChange={(e) => onUpdate("maxCovers", Number(e.target.value))}
+            className="w-14"
+          />
+          <Button
+            variant="destructive"
+            size="icon-xs"
+            onClick={onRemove}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

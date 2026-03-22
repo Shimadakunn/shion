@@ -7,6 +7,9 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { FadeIn } from "./motion";
 import type { Id } from "@/convex/_generated/dataModel";
+import Image from "next/image";
+
+const MENU_IMAGE = "kg25a95k663p6cbgtrzxe2gd3n83abb3" as Id<"_storage">;
 
 type Service = "lunch" | "dinner";
 type Locale = "fr" | "en" | "jp";
@@ -15,9 +18,9 @@ export function Menu() {
   const t = useTranslations("menu");
   const locale = useLocale() as Locale;
   const [service, setService] = useState<Service>("lunch");
+  const imageUrl = useQuery(api.files.getUrl, { storageId: MENU_IMAGE });
 
   const items = useQuery(api.menu.getActiveItems, { service });
-  const formules = useQuery(api.formules.getActiveFormules, { service });
   const categories = useQuery(api.categories.getActive);
   const subcategories = useQuery(api.subcategories.getActive);
 
@@ -35,9 +38,7 @@ export function Menu() {
     if (!categories || !items) return [];
 
     // Active subcategory IDs — items in inactive subcategories are hidden
-    const activeSubIds = new Set(
-      (subcategories ?? []).map((s) => s._id),
-    );
+    const activeSubIds = new Set((subcategories ?? []).map((s) => s._id));
 
     return categories
       .map((cat) => {
@@ -90,19 +91,18 @@ export function Menu() {
   }, [categories, items, subcategoryMap]);
 
   return (
-    <section id="menu" className="mx-auto max-w-4xl px-6 py-32">
+    <section id="menu" className="mx-4 md:mx-24 my-24 scroll-mt-24">
       <FadeIn>
-        <h2 className="mb-16 text-center text-3xl font-light tracking-[0.3em] uppercase">
+        <h2 className="text-center text-3xl tracking-widest uppercase mb-12 font-serif font-bold">
           {t("title")}
         </h2>
       </FadeIn>
 
-      {/* Service toggle */}
-      <div className="mb-16 flex justify-center gap-1">
+      <div className="mb-8 flex justify-center gap-1">
         {(["lunch", "dinner"] as const).map((s) => (
           <Button
             key={s}
-            variant={s === service ? "default" : "ghost"}
+            variant={s === service ? "default" : "outline"}
             size="lg"
             onClick={() => setService(s)}
             className="px-8 tracking-wider uppercase"
@@ -112,79 +112,63 @@ export function Menu() {
         ))}
       </div>
 
-      {/* Formules */}
-      {formules && formules.length > 0 && (
-        <div className="mb-20">
-          <h3 className="text-muted-foreground mb-8 text-center text-xs font-medium tracking-[0.3em] uppercase">
-            {t("formules")}
-          </h3>
-          <div className="space-y-6">
-            {formules.map((f) => (
-              <div
-                key={f._id}
-                className="flex items-start justify-between border-b border-dotted border-border pb-6"
-              >
-                <div className="space-y-1">
-                  <h4 className="font-medium">{f.name[locale]}</h4>
-                  <p className="text-muted-foreground max-w-md text-sm">
-                    {f.description[locale]}
-                  </p>
-                </div>
-                <span className="text-primary ml-8 shrink-0 text-lg font-light">
-                  {f.price}€
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* À la carte */}
-      <div className="space-y-16">
-        {sections.map(({ category, groups }) => (
-          <div key={category._id}>
-            <h3 className="text-muted-foreground mb-8 text-center text-xs font-medium tracking-[0.3em] uppercase">
-              {category.name[locale]}
-            </h3>
-            <div className="space-y-8">
-              {groups.map(({ subcategoryId, items: groupItems }) => (
-                <div key={subcategoryId ?? "__none"}>
-                  {subcategoryId && (
-                    <h4 className="text-muted-foreground/70 mb-4 text-center text-[0.65rem] font-medium tracking-[0.25em] uppercase">
-                      — {subcategoryMap.get(subcategoryId)?.name[locale]} —
-                    </h4>
-                  )}
-                  <div className="space-y-6">
-                    {groupItems.map((item) => (
-                      <div
-                        key={item._id}
-                        className="flex items-start justify-between border-b border-dotted border-border pb-6"
-                      >
-                        <div className="space-y-1">
-                          <h4 className="font-medium">
-                            {item.name[locale]}
-                          </h4>
-                          <p className="text-muted-foreground max-w-md text-sm">
-                            {item.description[locale]}
-                          </p>
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+        {/* Menu content */}
+        <div className="min-w-0 flex-1 space-y-8 lg:w-2/3">
+          {sections.map(({ category, groups }) => (
+            <div key={category._id}>
+              <h3 className="mb-2 text-3xl font-serif tracking-tighter text-muted-foreground">
+                {category.name[locale]}
+              </h3>
+              <div className="space-y-2">
+                {groups.map(({ subcategoryId, items: groupItems }) => (
+                  <div key={subcategoryId ?? "__none"}>
+                    {subcategoryId && (
+                      <h4 className="text-muted-foreground tracking-tighter font-serif text-md">
+                        {subcategoryMap.get(subcategoryId)?.name[locale]}
+                      </h4>
+                    )}
+                    <div className="space-y-2">
+                      {groupItems.map((item) => (
+                        <div
+                          key={item._id}
+                          className="flex items-start justify-between"
+                        >
+                          <div>
+                            <h4 className="text-2xl font-light">
+                              {item.name[locale]}
+                            </h4>
+                            <p className="text-muted-foreground max-w-md text-sm font-light">
+                              {item.description[locale]}
+                            </p>
+                          </div>
+                          <span className="text-amber-300 ml-8 shrink-0 text-lg font-light">
+                            {item.price}€
+                          </span>
                         </div>
-                        <span className="text-primary ml-8 shrink-0 text-lg font-light">
-                          {item.price}€
-                        </span>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
 
-      {/* Empty state */}
-      {items && items.length === 0 && formules && formules.length === 0 && (
-        <p className="text-muted-foreground py-16 text-center text-sm">—</p>
-      )}
+          {/* Empty state */}
+          {items && items.length === 0 && (
+            <p className="text-muted-foreground py-16 text-center text-sm">—</p>
+          )}
+        </div>
+
+        {/* Side image — sticky on desktop, below menu on mobile */}
+        {imageUrl && (
+          <aside className="lg:w-1/3 lg:shrink-0 lg:self-start lg:sticky lg:top-8 relative">
+            <img src={imageUrl} alt="menu image" className="w-full" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-black/80" />
+            <div className="absolute inset-0 bg-linear-to-l from-black/20 via-transparent to-black/20" />
+          </aside>
+        )}
+      </div>
     </section>
   );
 }

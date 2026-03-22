@@ -4,17 +4,18 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useMemo } from "react";
 import { MenuItemForm } from "@/components/admin/menu/menu-item-form";
-import { FormuleForm } from "@/components/admin/menu/formule-form";
 import { CategoryForm } from "@/components/admin/menu/category-form";
 import { SubcategoryForm } from "@/components/admin/menu/subcategory-form";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import type { Id } from "@/convex/_generated/dataModel";
-import { DndContext, DragOverlay, closestCorners } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { DndContext, DragOverlay } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { useMenuDnd } from "@/components/admin/menu/use-menu-dnd";
 import { SortableCategorySection } from "@/components/admin/menu/sortable-category-section";
-import { FormulesList } from "@/components/admin/menu/formules-list";
 import {
   ItemDragOverlay,
   CategoryDragOverlay,
@@ -30,12 +31,10 @@ import type { MenuItem, SubcategoryItem } from "@/components/admin/menu/types";
 
 export default function AdminMenuPage() {
   const items = useQuery(api.menu.getAll);
-  const formules = useQuery(api.formules.getAll);
   const categories = useQuery(api.categories.getAll);
   const subcategories = useQuery(api.subcategories.getAll);
 
   const removeItem = useMutation(api.menu.remove);
-  const removeFormule = useMutation(api.formules.remove);
   const removeCategory = useMutation(api.categories.remove);
   const updateCategory = useMutation(api.categories.update);
   const reorderItems = useMutation(api.menu.reorder);
@@ -48,11 +47,16 @@ export default function AdminMenuPage() {
   // Editing state
   const [editingItem, setEditingItem] = useState<
     | Id<"menuItems">
-    | { new: true; categoryId: Id<"categories">; subcategoryId?: Id<"subcategories"> }
+    | {
+        new: true;
+        categoryId: Id<"categories">;
+        subcategoryId?: Id<"subcategories">;
+      }
     | null
   >(null);
-  const [editingFormule, setEditingFormule] = useState<Id<"formules"> | "new" | null>(null);
-  const [editingCategory, setEditingCategory] = useState<Id<"categories"> | "new" | null>(null);
+  const [editingCategory, setEditingCategory] = useState<
+    Id<"categories"> | "new" | null
+  >(null);
   const [editingSubcategory, setEditingSubcategory] = useState<
     { id: Id<"subcategories"> } | { newForCategory: Id<"categories"> } | null
   >(null);
@@ -63,8 +67,11 @@ export default function AdminMenuPage() {
     localCategories,
     localSubcategories,
     sensors,
+    collisionDetection,
     hierarchy,
     categorySortableIds,
+    isDraggingItem,
+    overContainerId,
     activeItem,
     activeCategoryItem,
     activeSubcategoryItem,
@@ -85,27 +92,35 @@ export default function AdminMenuPage() {
     if (!isFiltering) return hierarchy;
 
     return hierarchy
-      .filter((entry) =>
-        filters.categories.size === 0 || filters.categories.has(entry.category._id)
+      .filter(
+        (entry) =>
+          filters.categories.size === 0 ||
+          filters.categories.has(entry.category._id),
       )
       .map((entry) => {
         let filteredItems = entry.items;
         if (filters.services.size > 0)
-          filteredItems = filteredItems.filter((i) => filters.services.has(i.service));
+          filteredItems = filteredItems.filter((i) =>
+            filters.services.has(i.service),
+          );
 
         let filteredSubs = entry.subcategories;
         if (filters.subcategories.size > 0)
-          filteredSubs = filteredSubs.filter((s) => filters.subcategories.has(s._id));
+          filteredSubs = filteredSubs.filter((s) =>
+            filters.subcategories.has(s._id),
+          );
 
         // When filtering by subcategory, also filter items to only show matching subcategories
         if (filters.subcategories.size > 0)
           filteredItems = filteredItems.filter(
-            (i) => !i.subcategory || filters.subcategories.has(i.subcategory)
+            (i) => !i.subcategory || filters.subcategories.has(i.subcategory),
           );
 
         return { ...entry, items: filteredItems, subcategories: filteredSubs };
       })
-      .filter((entry) => entry.items.length > 0 || entry.subcategories.length > 0);
+      .filter(
+        (entry) => entry.items.length > 0 || entry.subcategories.length > 0,
+      );
   }, [hierarchy, filters, isFiltering]);
 
   const filteredItemCount = useMemo(
@@ -117,11 +132,6 @@ export default function AdminMenuPage() {
   const currentItem =
     editingItem && typeof editingItem === "string"
       ? items?.find((i) => i._id === editingItem)
-      : undefined;
-
-  const currentFormule =
-    editingFormule && editingFormule !== "new"
-      ? formules?.find((f) => f._id === editingFormule)
       : undefined;
 
   const currentCategory =
@@ -152,14 +162,16 @@ export default function AdminMenuPage() {
 
   return (
     <div>
-      <h1 className="mb-8 text-xl font-light tracking-[0.2em] uppercase">
+      <h1 className="mb-4 sm:mb-8 text-lg sm:text-xl font-light tracking-[0.2em] uppercase">
         Menu management
       </h1>
 
       {/* Plates section */}
       <div className="mb-12">
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-sm font-medium tracking-wider uppercase">Plates</h2>
+          <h2 className="text-sm font-medium tracking-wider uppercase">
+            Plates
+          </h2>
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="text-xs text-muted-foreground">
               {isFiltering
@@ -182,10 +194,6 @@ export default function AdminMenuPage() {
             </Button>
           </div>
         </div>
-
-        <p className="mb-4 text-xs text-muted-foreground">
-          Drag to reorder categories, subcategories and plates
-        </p>
 
         <MenuItemForm
           key={editingItem ? String(editingItem) : "closed-item"}
@@ -224,7 +232,11 @@ export default function AdminMenuPage() {
         />
 
         <SubcategoryForm
-          key={editingSubcategory ? JSON.stringify(editingSubcategory) : "closed-sub"}
+          key={
+            editingSubcategory
+              ? JSON.stringify(editingSubcategory)
+              : "closed-sub"
+          }
           subcategory={currentSubcategory}
           defaultCategoryId={
             editingSubcategory && "newForCategory" in editingSubcategory
@@ -247,7 +259,7 @@ export default function AdminMenuPage() {
 
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCorners}
+          collisionDetection={collisionDetection}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
@@ -256,46 +268,50 @@ export default function AdminMenuPage() {
             items={categorySortableIds}
             strategy={verticalListSortingStrategy}
           >
-            {filteredHierarchy.map(({ category, subcategories: subs, items: catItems }) => (
-              <SortableCategorySection
-                key={category._id}
-                category={category}
-                subcategories={subs}
-                items={catItems}
-                onEditItem={(id) => setEditingItem(id)}
-                onRemoveItem={(id) => removeItem({ id })}
-                onToggleItemActive={(item: MenuItem) =>
-                  updateItem({ id: item._id, isActive: !item.isActive })
-                }
-                onEditCategory={() => setEditingCategory(category._id)}
-                onToggleActive={() =>
-                  updateCategory({
-                    id: category._id,
-                    isActive: category.isActive === false,
-                  })
-                }
-                onAddItem={() =>
-                  setEditingItem({ new: true, categoryId: category._id })
-                }
-                onAddItemToSubcategory={(subId) =>
-                  setEditingItem({
-                    new: true,
-                    categoryId: category._id,
-                    subcategoryId: subId,
-                  })
-                }
-                onAddSubcategory={() =>
-                  setEditingSubcategory({ newForCategory: category._id })
-                }
-                onEditSubcategory={(id) => setEditingSubcategory({ id })}
-                onToggleSubcategoryActive={(sub: SubcategoryItem) =>
-                  updateSubcategory({
-                    id: sub._id,
-                    isActive: sub.isActive === false,
-                  })
-                }
-              />
-            ))}
+            {filteredHierarchy.map(
+              ({ category, subcategories: subs, items: catItems }) => (
+                <SortableCategorySection
+                  key={category._id}
+                  category={category}
+                  subcategories={subs}
+                  items={catItems}
+                  isDraggingItem={isDraggingItem}
+                  overContainerId={overContainerId}
+                  onEditItem={(id) => setEditingItem(id)}
+                  onRemoveItem={(id) => removeItem({ id })}
+                  onToggleItemActive={(item: MenuItem) =>
+                    updateItem({ id: item._id, isActive: !item.isActive })
+                  }
+                  onEditCategory={() => setEditingCategory(category._id)}
+                  onToggleActive={() =>
+                    updateCategory({
+                      id: category._id,
+                      isActive: category.isActive === false,
+                    })
+                  }
+                  onAddItem={() =>
+                    setEditingItem({ new: true, categoryId: category._id })
+                  }
+                  onAddItemToSubcategory={(subId) =>
+                    setEditingItem({
+                      new: true,
+                      categoryId: category._id,
+                      subcategoryId: subId,
+                    })
+                  }
+                  onAddSubcategory={() =>
+                    setEditingSubcategory({ newForCategory: category._id })
+                  }
+                  onEditSubcategory={(id) => setEditingSubcategory({ id })}
+                  onToggleSubcategoryActive={(sub: SubcategoryItem) =>
+                    updateSubcategory({
+                      id: sub._id,
+                      isActive: sub.isActive === false,
+                    })
+                  }
+                />
+              ),
+            )}
           </SortableContext>
 
           <DragOverlay>
@@ -315,29 +331,16 @@ export default function AdminMenuPage() {
           </p>
         )}
 
-        {!isFiltering && categories && localCategories.length === 0 && localItems.length === 0 && (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            No categories yet. Add a category to get started.
-          </p>
-        )}
+        {!isFiltering &&
+          categories &&
+          localCategories.length === 0 &&
+          localItems.length === 0 && (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              No categories yet. Add a category to get started.
+            </p>
+          )}
       </div>
 
-      {/* Formules section */}
-      <FormuleForm
-        key={editingFormule ? String(editingFormule) : "closed-formule"}
-        formule={currentFormule}
-        open={editingFormule !== null}
-        onOpenChange={(open) => {
-          if (!open) setEditingFormule(null);
-        }}
-      />
-
-      <FormulesList
-        formules={formules}
-        onAdd={() => setEditingFormule("new")}
-        onEdit={(id) => setEditingFormule(id)}
-        onRemove={(id) => removeFormule({ id })}
-      />
     </div>
   );
 }

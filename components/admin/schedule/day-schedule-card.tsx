@@ -22,10 +22,10 @@ export function DayScheduleCard({
   onRemoveService,
 }: DayScheduleCardProps) {
   return (
-    <div className="border border-border p-4">
+    <div className="border border-border p-3 sm:p-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <span className="w-24 text-sm font-medium">{DAY_LABELS[day]}</span>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <span className="w-20 sm:w-24 text-sm font-medium">{DAY_LABELS[day]}</span>
           <Badge
             className={
               isOpen

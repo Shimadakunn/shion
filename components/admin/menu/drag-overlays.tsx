@@ -2,18 +2,22 @@
 
 import { Badge } from "@/components/ui/badge";
 import { GripVertical } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { MenuItem, CategoryItem, SubcategoryItem } from "./types";
-import { SERVICE_LABELS, SERVICE_BADGE } from "./constants";
+import { SERVICE_LABELS, SERVICE_LABELS_SHORT, SERVICE_BADGE_COLORS } from "./constants";
 
 export function ItemDragOverlay({ item }: { item: MenuItem }) {
   return (
-    <div className="flex items-center justify-between border border-primary/40 bg-background p-3 shadow-lg">
-      <div className="flex items-center gap-3">
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
-        <span>{item.name.fr}</span>
-        <Badge className={SERVICE_BADGE}>{SERVICE_LABELS[item.service]}</Badge>
+    <div className="flex items-center justify-between border border-primary/40 bg-background px-2 py-2 sm:p-3 shadow-lg">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+        <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <span className="truncate text-sm sm:text-base">{item.name.fr}</span>
+        <Badge className={cn("shrink-0", SERVICE_BADGE_COLORS[item.service])}>
+          <span className="sm:hidden">{SERVICE_LABELS_SHORT[item.service]}</span>
+          <span className="hidden sm:inline">{SERVICE_LABELS[item.service]}</span>
+        </Badge>
       </div>
-      <span className="text-sm tabular-nums">{item.price}&euro;</span>
+      <span className="shrink-0 text-xs sm:text-sm tabular-nums">{item.price}&euro;</span>
     </div>
   );
 }

@@ -1,20 +1,19 @@
 "use client";
 
 import { useMemo } from "react";
-import { Users, Sun, Moon } from "lucide-react";
+import { Sun, Moon, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Reservation, ServicePeriod } from "./types";
 import { DAY_KEYS, DAY_LABELS, isLunchService, getStatusConfig } from "./constants";
 import { timeToMinutes } from "./utils";
 import { useCurrentMinutes, NowMarker } from "./now-indicator";
 
-type WeekViewProps = {
-  weekDates: string[];
+type ThreeDayViewProps = {
+  dates: string[];
   reservations: Reservation[];
   todayISO: string;
   closedDates: Set<string>;
-  weekServices: Map<string, ServicePeriod[]>;
-  onDayClick: (date: string) => void;
+  dateServices: Map<string, ServicePeriod[]>;
   onReservationClick: (r: Reservation) => void;
 };
 
@@ -70,9 +69,9 @@ function ReservationList({
 
   if (section.reservations.length === 0)
     return (
-      <div className="px-1 py-1 text-center text-[8px] text-muted-foreground/40">
+      <div className="px-2 py-2 text-center text-[10px] text-muted-foreground/40">
         {isNowInService && (
-          <div className="px-0.5">
+          <div className="px-1">
             <NowMarker nowMinutes={nowMinutes} />
           </div>
         )}
@@ -87,32 +86,32 @@ function ReservationList({
         return (
           <div key={r._id}>
             {nowInsertIdx === idx && (
-              <div className="px-0.5">
+              <div className="px-1">
                 <NowMarker nowMinutes={nowMinutes} />
               </div>
             )}
             <button
               onClick={() => onReservationClick(r)}
               className={cn(
-                "w-full flex items-center gap-0.5 px-1 py-0.5 text-left transition-colors hover:bg-muted/40 border-l-2",
+                "w-full flex items-center gap-1 px-2 py-1 text-left transition-colors hover:bg-muted/40 border-l-2",
                 config.border,
                 config.bg,
                 config.dismissed && "opacity-50",
               )}
             >
               <span className={cn(
-                "text-[9px] tabular-nums shrink-0",
+                "text-[11px] tabular-nums shrink-0",
                 config.dismissed && "line-through",
               )}>
                 {r.time}
               </span>
               <span className={cn(
-                "text-[9px] truncate flex-1",
+                "text-[11px] truncate flex-1",
                 config.dismissed && "line-through text-muted-foreground",
               )}>
                 {r.name}
               </span>
-              <span className="text-[8px] text-muted-foreground tabular-nums shrink-0">
+              <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
                 {r.partySize}p
               </span>
             </button>
@@ -120,7 +119,7 @@ function ReservationList({
         );
       })}
       {nowInsertIdx === section.reservations.length && (
-        <div className="px-0.5">
+        <div className="px-1">
           <NowMarker nowMinutes={nowMinutes} />
         </div>
       )}
@@ -128,35 +127,26 @@ function ReservationList({
   );
 }
 
-function DayRowGroup({
+export function ThreeDayView({
   dates,
-  sectionsByDate,
+  reservations,
   todayISO,
   closedDates,
-  lunchServiceNames,
-  dinnerServiceNames,
-  nowMinutes,
-  onDayClick,
+  dateServices,
   onReservationClick,
-}: {
-  dates: string[];
-  sectionsByDate: Map<string, ServiceSection[]>;
-  todayISO: string;
-  closedDates: Set<string>;
-  lunchServiceNames: string[];
-  dinnerServiceNames: string[];
-  nowMinutes: number;
-  onDayClick: (date: string) => void;
-  onReservationClick: (r: Reservation) => void;
-}) {
-  const gridTemplate = dates
-    .map((d) => (closedDates.has(d) ? "minmax(0, 0.4fr)" : "minmax(0, 1fr)"))
-    .join(" ");
+}: ThreeDayViewProps) {
+  const nowMinutes = useCurrentMinutes();
 
-  function getSection(date: string, serviceName: string): ServiceSection | undefined {
-    return sectionsByDate.get(date)?.find((s) => s.service.name === serviceName);
-  }
+  const sectionsByDate = useMemo(() => {
+    const map = new Map<string, ServiceSection[]>();
+    for (const date of dates) {
+      const services = dateServices.get(date) ?? [];
+      map.set(date, buildSections(date, services, reservations));
+    }
+    return map;
+  }, [dates, dateServices, reservations]);
 
+  // Collect unique service names across all dates, split into lunch/dinner
   const outsideServicePosition = useMemo(() => {
     if (!dates.includes(todayISO)) return null;
     const todaySections = sectionsByDate.get(todayISO) ?? [];
@@ -178,14 +168,28 @@ function DayRowGroup({
     return "between" as const;
   }, [dates, todayISO, sectionsByDate, nowMinutes]);
 
+  const { lunchServiceNames, dinnerServiceNames } = useMemo(() => {
+    const lunch = new Set<string>();
+    const dinner = new Set<string>();
+    for (const sections of sectionsByDate.values()) {
+      for (const s of sections) {
+        if (isLunchService(s.service.name)) lunch.add(s.service.name);
+        else dinner.add(s.service.name);
+      }
+    }
+    return { lunchServiceNames: [...lunch], dinnerServiceNames: [...dinner] };
+  }, [sectionsByDate]);
+
+  // Helper to find section by service name for a given date
+  function getSection(date: string, serviceName: string): ServiceSection | undefined {
+    return sectionsByDate.get(date)?.find((s) => s.service.name === serviceName);
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Day headers */}
-      <div
-        className="grid shrink-0 border-b border-border"
-        style={{ gridTemplateColumns: gridTemplate }}
-      >
-        {dates.map((date, i) => {
+      <div className="flex shrink-0 border-b border-border">
+        {dates.map((date) => {
           const d = new Date(date);
           const dayLabel = DAY_LABELS[DAY_KEYS[d.getDay()]];
           const dayNum = d.getDate();
@@ -193,29 +197,32 @@ function DayRowGroup({
           const isClosed = closedDates.has(date);
 
           return (
-            <button
+            <div
               key={date}
-              onClick={() => onDayClick(date)}
               className={cn(
-                "flex flex-col items-center py-1.5 transition-colors hover:bg-muted/30",
-                i > 0 && "border-l border-border",
+                "flex-1 flex items-center gap-2 px-2 py-2 border-l border-border first:border-l-0",
                 isClosed && "bg-muted/20",
               )}
             >
-              <span className={cn(
-                "text-[9px] uppercase tracking-wider",
-                isClosed ? "text-muted-foreground/40 line-through" : "text-muted-foreground",
-              )}>
-                {dayLabel}
-              </span>
-              <span className={cn(
-                "flex h-5 w-5 items-center justify-center text-[11px]",
-                isToday && !isClosed && "bg-primary text-primary-foreground rounded-full font-medium",
-                isClosed && "text-muted-foreground/40 line-through",
-              )}>
-                {dayNum}
-              </span>
-            </button>
+              <div className="flex flex-col items-center shrink-0">
+                <span className={cn(
+                  "text-[10px] uppercase tracking-wider",
+                  isClosed ? "text-muted-foreground/50" : "text-muted-foreground",
+                )}>
+                  {dayLabel}
+                </span>
+                <span className={cn(
+                  "flex h-7 w-7 items-center justify-center text-sm",
+                  isToday && !isClosed && "bg-primary text-primary-foreground rounded-full font-medium",
+                  isClosed && "text-muted-foreground/50",
+                )}>
+                  {dayNum}
+                </span>
+              </div>
+              {isClosed && (
+                <span className="text-[9px] text-muted-foreground/60 italic">Closed</span>
+              )}
+            </div>
           );
         })}
       </div>
@@ -223,14 +230,11 @@ function DayRowGroup({
       {/* Lunch half */}
       <div className="flex-1 min-h-0 flex flex-col">
         {outsideServicePosition === "before-lunch" && (
-          <div
-            className="grid shrink-0"
-            style={{ gridTemplateColumns: gridTemplate }}
-          >
-            {dates.map((date, i) => (
-              <div key={date} className={cn(i > 0 && "border-l border-border")}>
+          <div className="shrink-0 flex divide-x divide-border">
+            {dates.map((date) => (
+              <div key={date} className="flex-1">
                 {date === todayISO && (
-                  <div className="px-0.5"><NowMarker nowMinutes={nowMinutes} /></div>
+                  <div className="px-1"><NowMarker nowMinutes={nowMinutes} /></div>
                 )}
               </div>
             ))}
@@ -238,10 +242,8 @@ function DayRowGroup({
         )}
         {lunchServiceNames.map((serviceName) => (
           <div key={serviceName} className="flex flex-col flex-1 min-h-0">
-            <div
-              className="grid shrink-0 border-b border-border bg-muted/30"
-              style={{ gridTemplateColumns: gridTemplate }}
-            >
+            {/* Service header row with covers per day */}
+            <div className="flex shrink-0 border-b border-border bg-muted/30">
               {dates.map((date, i) => {
                 const section = getSection(date, serviceName);
                 const isClosed = closedDates.has(date);
@@ -249,22 +251,26 @@ function DayRowGroup({
                   <div
                     key={date}
                     className={cn(
-                      "flex items-center gap-0.5 px-1 py-0.5",
+                      "flex-1 flex items-center gap-1 px-2 py-1",
                       i > 0 && "border-l border-border",
                       isClosed && "bg-muted/20",
                     )}
                   >
                     {i === 0 && (
                       <>
-                        <Sun className="h-2.5 w-2.5 text-amber-500 shrink-0" />
-                        <span className="text-[8px] font-medium uppercase tracking-wider truncate">
+                        <Sun className="h-3 w-3 text-amber-500 shrink-0" />
+                        <span className="text-[10px] font-medium uppercase tracking-wider truncate">
                           {serviceName}
                         </span>
                       </>
                     )}
                     {!isClosed && section && (
-                      <span className="text-[8px] text-muted-foreground tabular-nums shrink-0 ml-auto">
-                        <Users className="h-2 w-2 inline mr-0.5" />
+                      <span className={cn(
+                        "text-[9px] text-muted-foreground tabular-nums shrink-0",
+                        i > 0 && "ml-auto",
+                        i === 0 && "ml-auto",
+                      )}>
+                        <Users className="h-2.5 w-2.5 inline mr-0.5" />
                         {section.totalCovers}
                       </span>
                     )}
@@ -273,11 +279,9 @@ function DayRowGroup({
               })}
             </div>
 
-            <div
-              className="grid flex-1 min-h-0"
-              style={{ gridTemplateColumns: gridTemplate }}
-            >
-              {dates.map((date, i) => {
+            {/* Reservation columns */}
+            <div className="flex flex-1 min-h-0 divide-x divide-border">
+              {dates.map((date) => {
                 const section = getSection(date, serviceName);
                 const isClosed = closedDates.has(date);
                 const isToday = date === todayISO;
@@ -285,8 +289,7 @@ function DayRowGroup({
                   <div
                     key={date}
                     className={cn(
-                      "min-w-0 overflow-y-auto",
-                      i > 0 && "border-l border-border",
+                      "flex-1 min-w-0 overflow-y-auto",
                       isClosed && "bg-muted/10",
                     )}
                   >
@@ -305,14 +308,11 @@ function DayRowGroup({
           </div>
         ))}
         {outsideServicePosition === "after-lunch" && (
-          <div
-            className="grid shrink-0"
-            style={{ gridTemplateColumns: gridTemplate }}
-          >
-            {dates.map((date, i) => (
-              <div key={date} className={cn(i > 0 && "border-l border-border")}>
+          <div className="shrink-0 flex divide-x divide-border">
+            {dates.map((date) => (
+              <div key={date} className="flex-1">
                 {date === todayISO && (
-                  <div className="px-0.5"><NowMarker nowMinutes={nowMinutes} /></div>
+                  <div className="px-1"><NowMarker nowMinutes={nowMinutes} /></div>
                 )}
               </div>
             ))}
@@ -321,14 +321,11 @@ function DayRowGroup({
       </div>
 
       {/* Divider */}
-      <div
-        className={cn("shrink-0 border-t border-border", outsideServicePosition === "between" && "grid")}
-        style={outsideServicePosition === "between" ? { gridTemplateColumns: gridTemplate } : undefined}
-      >
-        {outsideServicePosition === "between" && dates.map((date, i) => (
-          <div key={date} className={cn(i > 0 && "border-l border-border")}>
+      <div className={cn("shrink-0 border-t border-border", outsideServicePosition === "between" && "flex divide-x divide-border")}>
+        {outsideServicePosition === "between" && dates.map((date) => (
+          <div key={date} className="flex-1">
             {date === todayISO && (
-              <div className="px-0.5"><NowMarker nowMinutes={nowMinutes} /></div>
+              <div className="px-1"><NowMarker nowMinutes={nowMinutes} /></div>
             )}
           </div>
         ))}
@@ -337,14 +334,11 @@ function DayRowGroup({
       {/* Dinner half */}
       <div className="flex-1 min-h-0 flex flex-col">
         {outsideServicePosition === "before-dinner" && (
-          <div
-            className="grid shrink-0"
-            style={{ gridTemplateColumns: gridTemplate }}
-          >
-            {dates.map((date, i) => (
-              <div key={date} className={cn(i > 0 && "border-l border-border")}>
+          <div className="shrink-0 flex divide-x divide-border">
+            {dates.map((date) => (
+              <div key={date} className="flex-1">
                 {date === todayISO && (
-                  <div className="px-0.5"><NowMarker nowMinutes={nowMinutes} /></div>
+                  <div className="px-1"><NowMarker nowMinutes={nowMinutes} /></div>
                 )}
               </div>
             ))}
@@ -352,10 +346,8 @@ function DayRowGroup({
         )}
         {dinnerServiceNames.map((serviceName) => (
           <div key={serviceName} className="flex flex-col flex-1 min-h-0">
-            <div
-              className="grid shrink-0 border-b border-border bg-muted/30"
-              style={{ gridTemplateColumns: gridTemplate }}
-            >
+            {/* Service header row with covers per day */}
+            <div className="flex shrink-0 border-b border-border bg-muted/30">
               {dates.map((date, i) => {
                 const section = getSection(date, serviceName);
                 const isClosed = closedDates.has(date);
@@ -363,22 +355,24 @@ function DayRowGroup({
                   <div
                     key={date}
                     className={cn(
-                      "flex items-center gap-0.5 px-1 py-0.5",
+                      "flex-1 flex items-center gap-1 px-2 py-1",
                       i > 0 && "border-l border-border",
                       isClosed && "bg-muted/20",
                     )}
                   >
                     {i === 0 && (
                       <>
-                        <Moon className="h-2.5 w-2.5 text-indigo-400 shrink-0" />
-                        <span className="text-[8px] font-medium uppercase tracking-wider truncate">
+                        <Moon className="h-3 w-3 text-indigo-400 shrink-0" />
+                        <span className="text-[10px] font-medium uppercase tracking-wider truncate">
                           {serviceName}
                         </span>
                       </>
                     )}
                     {!isClosed && section && (
-                      <span className="text-[8px] text-muted-foreground tabular-nums shrink-0 ml-auto">
-                        <Users className="h-2 w-2 inline mr-0.5" />
+                      <span className={cn(
+                        "text-[9px] text-muted-foreground tabular-nums shrink-0 ml-auto",
+                      )}>
+                        <Users className="h-2.5 w-2.5 inline mr-0.5" />
                         {section.totalCovers}
                       </span>
                     )}
@@ -387,11 +381,9 @@ function DayRowGroup({
               })}
             </div>
 
-            <div
-              className="grid flex-1 min-h-0"
-              style={{ gridTemplateColumns: gridTemplate }}
-            >
-              {dates.map((date, i) => {
+            {/* Reservation columns */}
+            <div className="flex flex-1 min-h-0 divide-x divide-border">
+              {dates.map((date) => {
                 const section = getSection(date, serviceName);
                 const isClosed = closedDates.has(date);
                 const isToday = date === todayISO;
@@ -399,8 +391,7 @@ function DayRowGroup({
                   <div
                     key={date}
                     className={cn(
-                      "min-w-0 overflow-y-auto",
-                      i > 0 && "border-l border-border",
+                      "flex-1 min-w-0 overflow-y-auto",
                       isClosed && "bg-muted/10",
                     )}
                   >
@@ -419,89 +410,16 @@ function DayRowGroup({
           </div>
         ))}
         {outsideServicePosition === "after-dinner" && (
-          <div
-            className="grid shrink-0"
-            style={{ gridTemplateColumns: gridTemplate }}
-          >
-            {dates.map((date, i) => (
-              <div key={date} className={cn(i > 0 && "border-l border-border")}>
+          <div className="shrink-0 flex divide-x divide-border">
+            {dates.map((date) => (
+              <div key={date} className="flex-1">
                 {date === todayISO && (
-                  <div className="px-0.5"><NowMarker nowMinutes={nowMinutes} /></div>
+                  <div className="px-1"><NowMarker nowMinutes={nowMinutes} /></div>
                 )}
               </div>
             ))}
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-export function WeekView({
-  weekDates,
-  reservations,
-  todayISO,
-  closedDates,
-  weekServices,
-  onDayClick,
-  onReservationClick,
-}: WeekViewProps) {
-  const nowMinutes = useCurrentMinutes();
-
-  const sectionsByDate = useMemo(() => {
-    const map = new Map<string, ServiceSection[]>();
-    for (const date of weekDates) {
-      const services = weekServices.get(date) ?? [];
-      map.set(date, buildSections(date, services, reservations));
-    }
-    return map;
-  }, [weekDates, weekServices, reservations]);
-
-  const { lunchServiceNames, dinnerServiceNames } = useMemo(() => {
-    const lunch = new Set<string>();
-    const dinner = new Set<string>();
-    for (const sections of sectionsByDate.values()) {
-      for (const s of sections) {
-        if (isLunchService(s.service.name)) lunch.add(s.service.name);
-        else dinner.add(s.service.name);
-      }
-    }
-    return { lunchServiceNames: [...lunch], dinnerServiceNames: [...dinner] };
-  }, [sectionsByDate]);
-
-  const firstRow = weekDates.slice(0, 3);
-  const secondRow = weekDates.slice(3);
-
-  return (
-    <div className="flex flex-col divide-y divide-border h-full">
-      {/* Mon - Wed */}
-      <div className="flex-1 min-h-0">
-        <DayRowGroup
-          dates={firstRow}
-          sectionsByDate={sectionsByDate}
-          todayISO={todayISO}
-          closedDates={closedDates}
-          lunchServiceNames={lunchServiceNames}
-          dinnerServiceNames={dinnerServiceNames}
-          nowMinutes={nowMinutes}
-          onDayClick={onDayClick}
-          onReservationClick={onReservationClick}
-        />
-      </div>
-
-      {/* Thu - Sun */}
-      <div className="flex-1 min-h-0">
-        <DayRowGroup
-          dates={secondRow}
-          sectionsByDate={sectionsByDate}
-          todayISO={todayISO}
-          closedDates={closedDates}
-          lunchServiceNames={lunchServiceNames}
-          dinnerServiceNames={dinnerServiceNames}
-          nowMinutes={nowMinutes}
-          onDayClick={onDayClick}
-          onReservationClick={onReservationClick}
-        />
       </div>
     </div>
   );

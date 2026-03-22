@@ -1,13 +1,14 @@
 import type { Id } from "@/convex/_generated/dataModel";
 
-export type ViewMode = "week" | "day";
+export type ViewMode = "week" | "3days" | "day";
 
 export type ReservationStatus =
   | "pending"
   | "confirmed"
   | "cancelled"
   | "no_show"
-  | "completed";
+  | "completed"
+;
 
 export type Reservation = {
   _id: Id<"reservations">;

@@ -11,8 +11,25 @@
   "menu": {
     "title": "メニュー",
     "lunch": "ランチ",
+    "dinner": "ディナー"
+  },
+  "schedule": {
+    "title": "営業時間",
+    "closed": "定休日",
+    "lunch": "ランチ",
     "dinner": "ディナー",
-    "formules": "コース"
+    "days": {
+      "1": "月曜日",
+      "2": "火曜日",
+      "3": "水曜日",
+      "4": "木曜日",
+      "5": "金曜日",
+      "6": "土曜日",
+      "0": "日曜日"
+    },
+    "specialDates": "特別営業日",
+    "specialClosed": "臨時休業",
+    "specialOpen": "特別営業"
   },
   "footer": {
     "contact": "お問い合わせ",
@@ -22,7 +39,9 @@
     "rights": "全著作権所有"
   },
   "cta": {
-    "reserve": "テーブルを予約する"
+    "reserve": "予約",
+    "menu": "メニュー",
+    "schedule": "営業時間"
   },
   "reservation": {
     "title": "ご予約",
@@ -52,6 +71,34 @@
     "guests": "{count}名様",
     "back": "戻る"
   },
+  "manage": {
+    "title": "ご予約の管理",
+    "status": "ステータス",
+    "pending": "確認待ち",
+    "confirmed": "確認済み",
+    "cancelled": "キャンセル済み",
+    "completed": "完了",
+    "no_show": "ノーショー",
+    "date": "日付",
+    "time": "時間",
+    "service": "サービス",
+    "guests": "{count}名様",
+    "notes": "備考",
+    "cancelReservation": "予約をキャンセル",
+    "cancelConfirm": "この予約をキャンセルしてよろしいですか？",
+    "cancelYes": "はい、キャンセルする",
+    "cancelNo": "いいえ、そのまま",
+    "cancelled_success": "ご予約がキャンセルされました。",
+    "modifyReservation": "予約を変更",
+    "modifyDescription": "新しい日付、時間、人数を選択してください。レストランの確認が必要です。",
+    "submitModification": "変更リクエストを送信",
+    "modification_success": "変更リクエストが送信されました。レストランが確認次第ご連絡いたします。",
+    "notFound": "予約が見つかりません",
+    "notFoundMessage": "このリンクは期限切れまたは無効です。",
+    "backToHome": "ホームに戻る",
+    "pastReservation": "この予約は過去のため変更できません。",
+    "alreadyCancelled": "この予約は既にキャンセル済みです。"
+  },
   "admin": {
     "login": {
       "title": "管理画面",
@@ -77,9 +124,7 @@
       "title": "メニュー管理",
       "itemsSection": "料理",
       "addItem": "料理を追加",
-      "addFormule": "コースを追加",
       "editItem": "料理を編集",
-      "editFormule": "コースを編集",
       "edit": "編集",
       "name": "名前",
       "description": "説明",

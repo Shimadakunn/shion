@@ -41,22 +41,6 @@ export default defineSchema({
     .index("by_service", ["service"])
     .index("by_order", ["order"]),
 
-  formules: defineTable({
-    service: v.union(
-      v.literal("lunch"),
-      v.literal("dinner"),
-      v.literal("both"),
-    ),
-    name: v.object(trilingualText),
-    description: v.object(trilingualText),
-    price: v.number(),
-    includedItemIds: v.array(v.id("menuItems")),
-    order: v.number(),
-    isActive: v.boolean(),
-  })
-    .index("by_service", ["service"])
-    .index("by_order", ["order"]),
-
   schedule: defineTable({
     dayOfWeek: v.number(),
     isOpen: v.boolean(),
@@ -101,11 +85,13 @@ export default defineSchema({
       v.literal("no_show"),
       v.literal("completed"),
     ),
+    managementToken: v.optional(v.string()),
     notes: v.optional(v.string()),
   })
     .index("by_date", ["date"])
     .index("by_status", ["status"])
-    .index("by_date_service", ["date", "service"]),
+    .index("by_date_service", ["date", "service"])
+    .index("by_management_token", ["managementToken"]),
 
   settings: defineTable({
     address: v.string(),

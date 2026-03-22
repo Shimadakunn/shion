@@ -89,7 +89,7 @@ export default function AdminSchedulePage() {
 
   return (
     <div>
-      <h1 className="mb-8 text-xl font-light tracking-[0.2em] uppercase">
+      <h1 className="mb-6 sm:mb-8 text-lg sm:text-xl font-light tracking-[0.2em] uppercase">
         Schedule management
       </h1>
 
@@ -140,7 +140,7 @@ export default function AdminSchedulePage() {
           const isOpen = sd.isOpen && hasServices;
 
           return (
-            <div key={sd._id} className="border border-border p-4">
+            <div key={sd._id} className="border border-border p-3 sm:p-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 min-w-0">
                   <span className="text-sm font-medium">
@@ -182,7 +182,7 @@ export default function AdminSchedulePage() {
               {isOpen && sd.services && (
                 <div className="mt-3 space-y-2">
                   {sd.services.map((svc, i) => (
-                    <div key={i} className="flex items-center gap-3 text-sm">
+                    <div key={i} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                       <span className="flex items-center gap-1.5 w-28">
                         {svc.name === "lunch" && <><Sun className="h-3.5 w-3.5" />Lunch</>}
                         {svc.name === "dinner" && <><Moon className="h-3.5 w-3.5" />Dinner</>}
@@ -191,8 +191,10 @@ export default function AdminSchedulePage() {
                       <span>{svc.openTime}</span>
                       <span className="text-muted-foreground">—</span>
                       <span>{svc.closeTime}</span>
-                      <Users className="h-3.5 w-3.5 text-muted-foreground ml-2" />
-                      <span>{svc.maxCovers}</span>
+                      <span className="flex items-center gap-1.5 ml-auto sm:ml-2">
+                        <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span>{svc.maxCovers}</span>
+                      </span>
                     </div>
                   ))}
                 </div>

@@ -3,9 +3,13 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   PointerSensor,
+  TouchSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
+  pointerWithin,
+  rectIntersection,
+  type CollisionDetection,
   type DragStartEvent,
   type DragOverEvent,
   type DragEndEvent,
@@ -32,6 +36,13 @@ function parseDroppableId(id: string): {
     subcategoryId: subPart === "__none" ? undefined : subPart,
   };
 }
+
+// pointerWithin first (precise for containers), then fall back to rectIntersection
+const multiContainerCollision: CollisionDetection = (args) => {
+  const pointerHits = pointerWithin(args);
+  if (pointerHits.length > 0) return pointerHits;
+  return rectIntersection(args);
+};
 
 export function useMenuDnd({
   items,
@@ -60,8 +71,8 @@ export function useMenuDnd({
   const [localSubcategories, setLocalSubcategories] = useState<SubcategoryItem[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [dragType, setDragType] = useState<DragType | null>(null);
+  const [overContainerId, setOverContainerId] = useState<string | null>(null);
 
-  // Sync server data to local state
   useEffect(() => {
     if (items) setLocalItems(items as MenuItem[]);
   }, [items]);
@@ -76,6 +87,7 @@ export function useMenuDnd({
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
     useSensor(KeyboardSensor),
   );
 
@@ -108,6 +120,23 @@ export function useMenuDnd({
     [localItems],
   );
 
+  // Resolve a sub:: or cat:: over ID to the container droppable ID
+  const resolveContainerId = useCallback(
+    (overId: string, activeItemId: string): string | null => {
+      if (overId.startsWith("sub::")) {
+        const subId = overId.replace("sub::", "");
+        const sub = localSubcategories.find((s) => s._id === subId);
+        if (sub) return `${sub.category}::${sub._id}`;
+      }
+      if (overId.startsWith("cat::")) {
+        const catId = overId.replace("cat::", "");
+        return `${catId}::__none`;
+      }
+      return null;
+    },
+    [localSubcategories],
+  );
+
   const persistItemOrder = useCallback(
     (updatedItems: MenuItem[]) => {
       const toUpdate: {
@@ -137,10 +166,35 @@ export function useMenuDnd({
     [localCategories, reorderItems],
   );
 
+  function moveItemToContainer(activeItemId: string, containerId: string) {
+    const parsed = parseDroppableId(containerId);
+    if (!parsed) return;
+
+    const activeItem = localItems.find((i) => i._id === activeItemId);
+    if (
+      activeItem?.category === parsed.categoryId &&
+      activeItem?.subcategory === (parsed.subcategoryId as Id<"subcategories"> | undefined)
+    )
+      return;
+
+    setLocalItems((prev) =>
+      prev.map((i) =>
+        i._id === activeItemId
+          ? {
+              ...i,
+              category: parsed.categoryId as Id<"categories">,
+              subcategory: parsed.subcategoryId as Id<"subcategories"> | undefined,
+            }
+          : i,
+      ),
+    );
+  }
+
   function handleDragStart(event: DragStartEvent) {
     const id = event.active.id as string;
     setActiveId(id);
     setDragType(getDragType(id));
+    setOverContainerId(null);
   }
 
   function handleDragOver(event: DragOverEvent) {
@@ -150,38 +204,47 @@ export function useMenuDnd({
     const activeItemId = active.id as string;
     const overId = over.id as string;
 
-    if (overId.startsWith("cat::") || overId.startsWith("sub::")) return;
-
-    const parsed = parseDroppableId(overId);
-    if (parsed) {
-      const activeCat = findCategoryOfItem(activeItemId);
-      const activeItem = localItems.find((i) => i._id === activeItemId);
-      if (
-        activeCat === parsed.categoryId &&
-        activeItem?.subcategory ===
-          (parsed.subcategoryId as Id<"subcategories"> | undefined)
-      )
-        return;
-
-      setLocalItems((prev) =>
-        prev.map((i) =>
-          i._id === activeItemId
-            ? {
-                ...i,
-                category: parsed.categoryId as Id<"categories">,
-                subcategory: parsed.subcategoryId as Id<"subcategories"> | undefined,
-              }
-            : i,
-        ),
-      );
+    // Resolve sub:: / cat:: to container IDs and move item there
+    const resolved = resolveContainerId(overId, activeItemId);
+    if (resolved) {
+      setOverContainerId(resolved);
+      moveItemToContainer(activeItemId, resolved);
       return;
     }
 
+    // Over a droppable container directly
+    const parsed = parseDroppableId(overId);
+    if (parsed) {
+      setOverContainerId(overId);
+      moveItemToContainer(activeItemId, overId);
+      return;
+    }
+
+    // Over another item — move to that item's container
     const activeCat = findCategoryOfItem(activeItemId);
     const overCat = findCategoryOfItem(overId);
-    if (!activeCat || !overCat || activeCat === overCat) return;
-
     const overItem = localItems.find((i) => i._id === overId);
+
+    if (overItem) {
+      const containerKey = `${overCat}::${overItem.subcategory ?? "__none"}`;
+      setOverContainerId(containerKey);
+    }
+
+    if (!activeCat || !overCat || activeCat === overCat) {
+      // Same category — check if subcategory differs
+      const activeItem = localItems.find((i) => i._id === activeItemId);
+      if (activeItem?.subcategory !== overItem?.subcategory) {
+        setLocalItems((prev) =>
+          prev.map((i) =>
+            i._id === activeItemId
+              ? { ...i, subcategory: overItem?.subcategory }
+              : i,
+          ),
+        );
+      }
+      return;
+    }
+
     setLocalItems((prev) =>
       prev.map((i) =>
         i._id === activeItemId
@@ -199,6 +262,7 @@ export function useMenuDnd({
     const { active, over } = event;
     setActiveId(null);
     setDragType(null);
+    setOverContainerId(null);
 
     if (!over) return;
 
@@ -258,12 +322,9 @@ export function useMenuDnd({
         });
       });
     } else {
-      // Item drag
-      if (
-        overIdStr.startsWith("cat::") ||
-        overIdStr.startsWith("sub::") ||
-        parseDroppableId(overIdStr)
-      ) {
+      // Item drag — resolve sub::/cat:: over targets
+      const resolved = resolveContainerId(overIdStr, activeIdStr);
+      if (resolved || parseDroppableId(overIdStr)) {
         persistItemOrder(localItems);
         return;
       }
@@ -304,7 +365,8 @@ export function useMenuDnd({
     }
   }
 
-  // Derived active overlay data
+  const isDraggingItem = dragType === "item";
+
   const activeItem =
     activeId && dragType === "item"
       ? localItems.find((i) => i._id === activeId)
@@ -325,8 +387,11 @@ export function useMenuDnd({
     localCategories,
     localSubcategories,
     sensors,
+    collisionDetection: multiContainerCollision,
     hierarchy,
     categorySortableIds,
+    isDraggingItem,
+    overContainerId,
     activeItem,
     activeCategoryItem,
     activeSubcategoryItem,

@@ -23,6 +23,11 @@ export function getWeekDates(monday: Date): string[] {
   return dates;
 }
 
+export function getCurrentMinutes(): number {
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+}
+
 export function timeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;

@@ -3,17 +3,34 @@
 import { useTranslations } from "next-intl";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import Image from "next/image";
+
+const FOOTER_IMAGE = "kg20pb1p3e15kf8j30dq4jq1cx83d3zc" as Id<"_storage">;
 
 export function Footer() {
   const t = useTranslations("footer");
   const settings = useQuery(api.settings.get);
+  const imageUrl = useQuery(api.files.getUrl, { storageId: FOOTER_IMAGE });
 
   return (
-    <footer className="border-t border-border px-6 py-20">
-      <div className="mx-auto grid max-w-4xl gap-12 sm:grid-cols-3">
+    <footer className="relative px-6 py-20">
+      {imageUrl && (
+        <>
+          <img
+            src={imageUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/70" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black/80" />
+          <div className="absolute inset-0 bg-linear-to-l from-black/20 via-transparent to-black/20" />
+        </>
+      )}
+      <div className="relative mx-auto grid max-w-4xl gap-6 sm:grid-cols-3">
         {/* Brand */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold tracking-[0.3em] uppercase">
+        <div>
+          <h3 className="text-lg font-semibold tracking-[0.15em] uppercase">
             Shion
           </h3>
           <p className="text-muted-foreground text-sm">
@@ -22,12 +39,12 @@ export function Footer() {
         </div>
 
         {/* Contact */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           <h4 className="text-xs font-medium tracking-[0.2em] uppercase">
             {t("contact")}
           </h4>
           {settings && (
-            <div className="text-muted-foreground space-y-2 text-sm">
+            <div className="text-muted-foreground text-sm">
               <p>{settings.address}</p>
               <p>{settings.phone}</p>
               <p>{settings.email}</p>
@@ -36,7 +53,7 @@ export function Footer() {
         </div>
 
         {/* Social */}
-        <div className="space-y-3">
+        <div className="space-y-2">
           {settings?.socialLinks?.instagram && (
             <a
               href={settings.socialLinks.instagram}
@@ -60,7 +77,7 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="text-muted-foreground mx-auto mt-16 max-w-4xl text-center text-xs">
+      <div className="text-muted-foreground relative mx-auto mt-16 max-w-4xl text-center text-xs">
         © {new Date().getFullYear()} Shion. {t("rights")}.
       </div>
     </footer>
