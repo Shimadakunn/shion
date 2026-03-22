@@ -14,12 +14,12 @@ const HERO_IMAGE_MOBILE = "kg2b6hfwksgp3s1abjybscx14183bkr2" as Id<"_storage">;
 const stagger = {
   hidden: {},
   visible: { transition: { staggerChildren: 0.2, delayChildren: 0.3 } },
-};
+} as const;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
-};
+} as const;
 
 export function Hero() {
   const t = useTranslations("hero");
