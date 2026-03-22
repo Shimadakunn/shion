@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,17 +20,17 @@ export default function AdminSettingsPage() {
   const [facebook, setFacebook] = useState("");
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => {
-    if (settings) {
-      setAddress(settings.address);
-      setPhone(settings.phone);
-      setEmail(settings.email);
-      setReservationEmail(settings.reservationEmail ?? "");
-      setGoogleMapsUrl(settings.googleMapsUrl ?? "");
-      setInstagram(settings.socialLinks?.instagram ?? "");
-      setFacebook(settings.socialLinks?.facebook ?? "");
-    }
-  }, [settings]);
+  const [prevSettings, setPrevSettings] = useState(settings);
+  if (settings && settings !== prevSettings) {
+    setPrevSettings(settings);
+    setAddress(settings.address);
+    setPhone(settings.phone);
+    setEmail(settings.email);
+    setReservationEmail(settings.reservationEmail ?? "");
+    setGoogleMapsUrl(settings.googleMapsUrl ?? "");
+    setInstagram(settings.socialLinks?.instagram ?? "");
+    setFacebook(settings.socialLinks?.facebook ?? "");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

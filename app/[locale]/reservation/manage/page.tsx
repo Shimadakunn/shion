@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -71,15 +71,14 @@ export default function ManageReservationPage() {
     modDate ? { date: modDate } : "skip",
   );
 
-  // Initialize modify form when reservation loads
+  // Initialize modify form when reservation first loads
   const [initialized, setInitialized] = useState(false);
-  useEffect(() => {
-    if (!reservation || initialized) return;
+  if (reservation && !initialized) {
+    setInitialized(true);
     setModDate(reservation.date);
     setModTime({ service: reservation.service, time: reservation.time });
     setModGuests(reservation.partySize);
-    setInitialized(true);
-  }, [reservation, initialized]);
+  }
 
   // Loading
   if (reservation === undefined)

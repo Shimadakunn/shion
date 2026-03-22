@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -34,12 +34,11 @@ export function SubcategoryForm({
 }: Props) {
   const create = useMutation(api.subcategories.create);
   const update = useMutation(api.subcategories.update);
-  const categories = useQuery(api.categories.getAll);
 
   const [nameFr, setNameFr] = useState(subcategory?.name.fr ?? "");
   const [nameEn, setNameEn] = useState(subcategory?.name.en ?? "");
   const [nameJp, setNameJp] = useState(subcategory?.name.jp ?? "");
-  const [categoryId, setCategoryId] = useState<string>(
+  const [categoryId] = useState<string>(
     subcategory?.category ?? defaultCategoryId ?? "",
   );
 

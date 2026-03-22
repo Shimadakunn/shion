@@ -6,11 +6,6 @@ import { api } from "@/convex/_generated/api";
 import { useMemo } from "react";
 import { FadeIn } from "./motion";
 
-const SERVICE_LABELS: Record<string, "lunch" | "dinner"> = {
-  lunch: "lunch",
-  dinner: "dinner",
-};
-
 // Monday → Sunday display order
 const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 

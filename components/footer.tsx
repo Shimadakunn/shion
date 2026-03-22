@@ -17,10 +17,11 @@ export function Footer() {
     <footer className="relative px-6 py-20">
       {imageUrl && (
         <>
-          <img
+          <Image
             src={imageUrl}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover"
+            fill
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-black/70" />
           <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black/80" />

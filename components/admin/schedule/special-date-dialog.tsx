@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,18 +47,21 @@ export function SpecialDateDialog({
   const [note, setNote] = useState("");
   const [services, setServices] = useState<ServiceInput[]>([]);
 
-  useEffect(() => {
-    if (!open) return;
-    if (initialData) {
-      setSelectedDate(initialData.date);
-      setNote(initialData.note);
-      setServices(initialData.services.map((s) => ({ ...s })));
-    } else {
-      setSelectedDate(undefined);
-      setNote("");
-      setServices([]);
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
+      if (initialData) {
+        setSelectedDate(initialData.date);
+        setNote(initialData.note);
+        setServices(initialData.services.map((s) => ({ ...s })));
+      } else {
+        setSelectedDate(undefined);
+        setNote("");
+        setServices([]);
+      }
     }
-  }, [open, initialData]);
+  }
 
   function handleDateSelected(date: Date | undefined) {
     setSelectedDate(date);

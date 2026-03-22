@@ -88,7 +88,7 @@ export function Menu() {
         items: NonNullable<typeof items>;
       }[];
     }[];
-  }, [categories, items, subcategoryMap]);
+  }, [categories, items, subcategories, subcategoryMap]);
 
   return (
     <section id="menu" className="mx-4 md:mx-24 my-24 scroll-mt-24">
@@ -163,7 +163,14 @@ export function Menu() {
         {/* Side image — sticky on desktop, below menu on mobile */}
         {imageUrl && (
           <aside className="lg:w-1/3 lg:shrink-0 lg:self-start lg:sticky lg:top-8 relative">
-            <img src={imageUrl} alt="menu image" className="w-full" />
+            <Image
+              src={imageUrl}
+              alt=""
+              width={600}
+              height={800}
+              sizes="(max-width: 1024px) 100vw, 33vw"
+              className="w-full h-auto"
+            />
             <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-black/80" />
             <div className="absolute inset-0 bg-linear-to-l from-black/20 via-transparent to-black/20" />
           </aside>

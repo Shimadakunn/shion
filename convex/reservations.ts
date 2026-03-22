@@ -190,7 +190,7 @@ export const getByToken = query({
       .withIndex("by_management_token", (q) => q.eq("managementToken", args.token))
       .first();
     if (!reservation) return null;
-    const { managementToken: _, ...safe } = reservation;
+    const { managementToken: _managementToken, ...safe } = reservation;
     return safe;
   },
 });

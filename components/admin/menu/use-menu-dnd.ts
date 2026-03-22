@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   PointerSensor,
   TouchSensor,
@@ -73,17 +73,23 @@ export function useMenuDnd({
   const [dragType, setDragType] = useState<DragType | null>(null);
   const [overContainerId, setOverContainerId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (items) setLocalItems(items as MenuItem[]);
-  }, [items]);
+  const [prevItems, setPrevItems] = useState(items);
+  if (items && items !== prevItems) {
+    setPrevItems(items);
+    setLocalItems(items as MenuItem[]);
+  }
 
-  useEffect(() => {
-    if (categories) setLocalCategories(categories as CategoryItem[]);
-  }, [categories]);
+  const [prevCategories, setPrevCategories] = useState(categories);
+  if (categories && categories !== prevCategories) {
+    setPrevCategories(categories);
+    setLocalCategories(categories as CategoryItem[]);
+  }
 
-  useEffect(() => {
-    if (subcategories) setLocalSubcategories(subcategories as SubcategoryItem[]);
-  }, [subcategories]);
+  const [prevSubcategories, setPrevSubcategories] = useState(subcategories);
+  if (subcategories && subcategories !== prevSubcategories) {
+    setPrevSubcategories(subcategories);
+    setLocalSubcategories(subcategories as SubcategoryItem[]);
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -122,7 +128,7 @@ export function useMenuDnd({
 
   // Resolve a sub:: or cat:: over ID to the container droppable ID
   const resolveContainerId = useCallback(
-    (overId: string, activeItemId: string): string | null => {
+    (overId: string): string | null => {
       if (overId.startsWith("sub::")) {
         const subId = overId.replace("sub::", "");
         const sub = localSubcategories.find((s) => s._id === subId);
@@ -205,7 +211,7 @@ export function useMenuDnd({
     const overId = over.id as string;
 
     // Resolve sub:: / cat:: to container IDs and move item there
-    const resolved = resolveContainerId(overId, activeItemId);
+    const resolved = resolveContainerId(overId);
     if (resolved) {
       setOverContainerId(resolved);
       moveItemToContainer(activeItemId, resolved);
@@ -323,7 +329,7 @@ export function useMenuDnd({
       });
     } else {
       // Item drag — resolve sub::/cat:: over targets
-      const resolved = resolveContainerId(overIdStr, activeIdStr);
+      const resolved = resolveContainerId(overIdStr);
       if (resolved || parseDroppableId(overIdStr)) {
         persistItemOrder(localItems);
         return;

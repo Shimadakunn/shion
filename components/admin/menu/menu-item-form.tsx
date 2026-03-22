@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -43,7 +43,6 @@ export function MenuItemForm({
 }: Props) {
   const create = useMutation(api.menu.create);
   const update = useMutation(api.menu.update);
-  const subcategories = useQuery(api.subcategories.getAll);
 
   const [service, setService] = useState<MenuItem["service"]>(
     item?.service ?? "both",
@@ -55,16 +54,12 @@ export function MenuItemForm({
   const [descEn, setDescEn] = useState(item?.description.en ?? "");
   const [descJp, setDescJp] = useState(item?.description.jp ?? "");
   const [price, setPrice] = useState(String(item?.price ?? ""));
-  const [isActive, setIsActive] = useState(item?.isActive ?? true);
-  const [category, setCategory] = useState<string>(
+  const [isActive] = useState(item?.isActive ?? true);
+  const [category] = useState<string>(
     item?.category ?? defaultCategoryId ?? "",
   );
-  const [subcategory, setSubcategory] = useState<string>(
+  const [subcategory] = useState<string>(
     item?.subcategory ?? defaultSubcategoryId ?? "",
-  );
-
-  const filteredSubcategories = subcategories?.filter(
-    (s) => s.category === category,
   );
 
   async function handleSubmit(e: React.FormEvent) {
