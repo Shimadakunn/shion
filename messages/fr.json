@@ -4,6 +4,7 @@
   },
   "hero": {
     "subtitle": "Cuisine franco-japonaise",
+    "description": "Cuisine raffinée et généreuse",
     "bestTable": "Meilleure Table Bistronomique 2025",
     "avgPrice": "Prix moyen",
     "googleRating": "Google"
@@ -56,6 +57,7 @@
     "other": "Autre",
     "nextAvailability": "Prochaine disponibilité",
     "next": "Continuer",
+    "reserve": "Réserver",
     "noSlots": "Aucun créneau disponible pour cette date",
     "closed": "Fermé ce jour"
   },
@@ -84,6 +86,8 @@
     "service": "Service",
     "guests": "{count, plural, one {# convive} other {# convives}}",
     "notes": "Notes",
+    "modify": "Modifier",
+    "cancel": "Annuler",
     "cancelReservation": "Annuler la réservation",
     "cancelConfirm": "Êtes-vous sûr de vouloir annuler cette réservation ?",
     "cancelYes": "Oui, annuler",

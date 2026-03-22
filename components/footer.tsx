@@ -5,6 +5,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Image from "next/image";
 import { storageIds } from "@/lib/storage-ids";
+import shionLogo from "@/lib/shion.png";
 
 export function Footer() {
   const t = useTranslations("footer");
@@ -12,30 +13,38 @@ export function Footer() {
   const imageUrl = useQuery(api.files.getUrl, { storageId: storageIds.footer });
 
   return (
-    <footer className="relative px-6 py-20">
+    <footer className="relative px-6 py-20 ">
       {imageUrl && (
         <>
-          <Image
-            src={imageUrl}
-            alt=""
-            fill
-            className="object-cover"
-          />
+          <Image src={imageUrl} alt="" fill className="object-cover" />
           <div className="absolute inset-0 bg-black/70" />
-          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black/80" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black" />
           <div className="absolute inset-0 bg-linear-to-l from-black/20 via-transparent to-black/20" />
         </>
       )}
-      <div className="relative mx-auto grid max-w-4xl gap-6 sm:grid-cols-3">
+
+      {/* Curved top overlay — inverted U, black-to-transparent */}
+      <svg
+        className="absolute top-0 left-0 z-10 h-56 w-full sm:h-80"
+        viewBox="0 0 1440 600"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <linearGradient id="footer-curve" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="black" />
+            <stop offset="25%" stopColor="black" stopOpacity="0.4" />
+            <stop offset="50%" stopColor="black" stopOpacity="0.08" />
+            <stop offset="65%" stopColor="black" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M0,600 Q720,300 1440,600 L1440,0 L0,0 Z"
+          fill="url(#footer-curve)"
+        />
+      </svg>
+      <div className="relative mx-auto grid max-w-4xl gap-6 sm:grid-cols-3 sm:items-center">
         {/* Brand */}
-        <div>
-          <h3 className="text-lg font-semibold tracking-[0.15em] uppercase">
-            Shion
-          </h3>
-          <p className="text-muted-foreground text-sm">
-            Cuisine franco-japonaise
-          </p>
-        </div>
+        <Image src={shionLogo} alt="Shion" className="h-auto w-32" />
 
         {/* Contact */}
         <div className="space-y-2">

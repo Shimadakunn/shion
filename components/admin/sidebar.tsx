@@ -10,6 +10,7 @@ import {
   CalendarDays,
   Clock,
   Settings,
+  Mail,
   ArrowLeft,
   LogOut,
 } from "lucide-react";
@@ -19,6 +20,7 @@ const navItems = [
   { key: "menu", href: "/admin/menu", icon: UtensilsCrossed },
   { key: "schedule", href: "/admin/schedule", icon: Clock },
   { key: "settings", href: "/admin/settings", icon: Settings },
+  { key: "emails", href: "/admin/emails", icon: Mail },
 ] as const;
 
 const NAV_LABELS: Record<string, string> = {
@@ -26,6 +28,7 @@ const NAV_LABELS: Record<string, string> = {
   reservations: "Reservations",
   schedule: "Schedule",
   settings: "Settings",
+  emails: "Emails",
 };
 
 export function AdminSidebar() {

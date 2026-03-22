@@ -4,8 +4,6 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
 import { MapPin, UtensilsCrossed, Clock } from "lucide-react";
 
 export function FloatingCTA() {
@@ -14,15 +12,12 @@ export function FloatingCTA() {
 
   const googleMapsUrl = settings?.googleMapsUrl;
 
-  const iconBtn = cn(
-    buttonVariants({ variant: "outline", size: "lg" }),
-    "shadow-lg px-3",
-  );
+  const iconBtn = "rounded-sm border border-white/70 px-2 py-2 shadow-lg";
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full">
       <div className="absolute inset-0 bg-linear-to-t from-black to-transparent pointer-events-none" />
-      <div className="relative flex items-center justify-center gap-2 pb-4 pt-24">
+      <div className="relative flex items-center justify-center gap-2 pb-4 pt-24 text-white/90">
         <a href="#menu" className={iconBtn} aria-label={t("menu")}>
           <UtensilsCrossed className="size-5" />
         </a>
@@ -42,10 +37,7 @@ export function FloatingCTA() {
         )}
         <Link
           href="/reservation"
-          className={cn(
-            buttonVariants({ variant: "default", size: "lg" }),
-            "shadow-lg",
-          )}
+          className="rounded-sm bg-foreground px-4 py-2 font-semibold text-background shadow-lg text-sm"
         >
           {t("reserve")}
         </Link>

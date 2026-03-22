@@ -4,6 +4,7 @@
   },
   "hero": {
     "subtitle": "Japanese-French cuisine",
+    "description": "Refined and generous cuisine",
     "bestTable": "Best Bistronomic Table 2025",
     "avgPrice": "Average price",
     "googleRating": "Google"
@@ -56,6 +57,7 @@
     "other": "Other",
     "nextAvailability": "Next availability",
     "next": "Continue",
+    "reserve": "Reserve",
     "noSlots": "No slots available for this date",
     "closed": "Closed on this day"
   },
@@ -84,6 +86,8 @@
     "service": "Service",
     "guests": "{count, plural, one {# guest} other {# guests}}",
     "notes": "Notes",
+    "modify": "Modify",
+    "cancel": "Cancel",
     "cancelReservation": "Cancel reservation",
     "cancelConfirm": "Are you sure you want to cancel this reservation?",
     "cancelYes": "Yes, cancel",

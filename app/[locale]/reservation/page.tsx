@@ -3,14 +3,13 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { GuestPicker } from "@/components/reservation/guest-picker";
 import { DatePicker } from "@/components/reservation/date-picker";
 import { TimeSlotPicker } from "@/components/reservation/time-slot-picker";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { CalendarDays, ChevronDown, Clock, UtensilsCrossed } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { AccordionStep } from "@/components/reservation/accordion-step";
+import { CalendarDays, Clock, UtensilsCrossed } from "lucide-react";
 
 type Step = "guests" | "date" | "time";
 
@@ -41,7 +40,7 @@ export default function ReservationPage() {
     service: string;
     time: string;
   } | null>(null);
-  const [openStep, setOpenStep] = useState<Step>("guests");
+  const [openStep, setOpenStep] = useState<Step | null>("date");
 
   const schedule = useQuery(api.schedule.getAll);
   const specialDates = useQuery(api.schedule.getSpecialDates);
@@ -82,6 +81,43 @@ export default function ReservationPage() {
     return !daySched.isOpen || daySched.services.length === 0;
   }
 
+  const initialDateSet = useRef(false);
+
+  useEffect(() => {
+    if (initialDateSet.current || !schedule || !specialDates) return;
+
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < 60; i++) {
+      const d = new Date(now);
+      d.setDate(d.getDate() + i);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const dateStr = `${y}-${m}-${day}`;
+
+      const special = specialDates.find((sd) => sd.date === dateStr);
+      if (special) {
+        if (special.isOpen) {
+          setDate(dateStr);
+          setOpenStep("time");
+          initialDateSet.current = true;
+          return;
+        }
+        continue;
+      }
+
+      const daySched = schedule.find((s) => s.dayOfWeek === d.getDay());
+      if (daySched?.isOpen && daySched.services.length > 0) {
+        setDate(dateStr);
+        setOpenStep("time");
+        initialDateSet.current = true;
+        return;
+      }
+    }
+  }, [schedule, specialDates]);
+
   function handleGuestSelect(count: number) {
     setGuests(count);
     setOpenStep("date");
@@ -97,134 +133,119 @@ export default function ReservationPage() {
     setTimeSelection(selection);
   }
 
+  const dateSummary = useMemo(() => {
+    if (!date) return "";
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    if (date === todayStr) return t("today");
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+    if (date === tomorrowStr) return t("tomorrow");
+    return formatDateLabel(date, locale);
+  }, [date, locale, t]);
+
   const canProceed = guests > 0 && date && timeSelection;
 
   return (
-    <div className="mx-auto min-h-screen max-w-xl px-6 pb-32 pt-24">
-      <Link
-        href="/"
-        className="mb-12 block text-center text-lg font-semibold tracking-[0.3em] uppercase"
-      >
-        Shion
-      </Link>
-
-      <h1 className="mb-12 text-center text-2xl font-light tracking-[0.2em] uppercase">
-        {t("title")}
-      </h1>
-
-      <div className="space-y-4">
-        {/* Step 1: Guests */}
-        <AccordionStep
-          icon={<UtensilsCrossed className="size-5" />}
-          title={t("guests")}
-          summary={t("guestsLabel", { count: guests })}
-          isOpen={openStep === "guests"}
-          onToggle={() => setOpenStep("guests")}
-          isCompleted={guests > 0}
+    <div className="mx-auto flex h-dvh max-w-xl flex-col px-6 py-12">
+      {/* Header — pinned top */}
+      <div className="shrink-0">
+        <Link
+          href="/"
+          className="mb-2 block text-center text-lg font-bold tracking-widest uppercase"
         >
-          <GuestPicker value={guests} onChange={handleGuestSelect} />
-        </AccordionStep>
-
-        {/* Step 2: Date */}
-        <AccordionStep
-          icon={<CalendarDays className="size-5" />}
-          title={date ? formatDateLabel(date, locale) : t("date")}
-          summary={date ? formatDateLabel(date, locale) : t("selectDate")}
-          isOpen={openStep === "date"}
-          onToggle={() => setOpenStep("date")}
-          isCompleted={!!date}
-        >
-          <DatePicker value={date} onChange={handleDateSelect} isDateDisabled={isDateDisabled} />
-        </AccordionStep>
-
-        {/* Step 3: Time */}
-        <AccordionStep
-          icon={<Clock className="size-5" />}
-          title={timeSelection ? timeSelection.time : t("time")}
-          summary={
-            timeSelection
-              ? `${timeSelection.service} — ${timeSelection.time}`
-              : t("selectTime")
-          }
-          isOpen={openStep === "time"}
-          onToggle={() => setOpenStep("time")}
-          isCompleted={!!timeSelection}
-        >
-          {!date && (
-            <p className="text-muted-foreground text-sm">{t("selectDate")}</p>
-          )}
-          {date && availability && !availability.isOpen && (
-            <p className="text-muted-foreground text-sm">{t("closed")}</p>
-          )}
-          {date &&
-            availability &&
-            availability.isOpen &&
-            filteredServices.length === 0 && (
-              <p className="text-muted-foreground text-sm">{t("noSlots")}</p>
-            )}
-          {date && availability && availability.isOpen && filteredServices.length > 0 && (
-            <TimeSlotPicker
-              services={filteredServices}
-              value={timeSelection}
-              onChange={handleTimeSelect}
-            />
-          )}
-        </AccordionStep>
+          Shion
+        </Link>
+        <h1 className="text-center text-2xl font-light tracking-widest uppercase">
+          {t("title")}
+        </h1>
       </div>
 
-      {/* Continue button */}
-      {canProceed && (
-        <div className="mt-12 text-center">
+      {/* Accordion — centered in remaining space */}
+      <div className="flex flex-1 items-center">
+        <div className="w-full divide-y divide-border overflow-hidden rounded-lg border border-border">
+          {/* Step 1: Guests */}
+          <AccordionStep
+            icon={<UtensilsCrossed className="size-5" />}
+            title={t("guests")}
+            summary={t("guestsLabel", { count: guests })}
+            isOpen={openStep === "guests"}
+            onToggle={() =>
+              setOpenStep(openStep === "guests" ? null : "guests")
+            }
+            isCompleted={guests > 0}
+          >
+            <GuestPicker value={guests} onChange={handleGuestSelect} />
+          </AccordionStep>
+
+          {/* Step 2: Date */}
+          <AccordionStep
+            icon={<CalendarDays className="size-5" />}
+            title={date ? dateSummary : t("date")}
+            summary={date ? dateSummary : t("selectDate")}
+            isOpen={openStep === "date"}
+            onToggle={() => setOpenStep(openStep === "date" ? null : "date")}
+            isCompleted={!!date}
+          >
+            <DatePicker
+              value={date}
+              onChange={handleDateSelect}
+              isDateDisabled={isDateDisabled}
+            />
+          </AccordionStep>
+
+          {/* Step 3: Time */}
+          <AccordionStep
+            icon={<Clock className="size-5" />}
+            title={timeSelection ? timeSelection.time : t("time")}
+            summary={timeSelection ? timeSelection.time : t("selectTime")}
+            isOpen={openStep === "time"}
+            onToggle={() => setOpenStep(openStep === "time" ? null : "time")}
+            isCompleted={!!timeSelection}
+          >
+            {!date && (
+              <p className="text-muted-foreground text-sm">{t("selectDate")}</p>
+            )}
+            {date && availability && !availability.isOpen && (
+              <p className="text-muted-foreground text-sm">{t("closed")}</p>
+            )}
+            {date &&
+              availability &&
+              availability.isOpen &&
+              filteredServices.length === 0 && (
+                <p className="text-muted-foreground text-sm">{t("noSlots")}</p>
+              )}
+            {date &&
+              availability &&
+              availability.isOpen &&
+              filteredServices.length > 0 && (
+                <TimeSlotPicker
+                  services={filteredServices}
+                  value={timeSelection}
+                  onChange={handleTimeSelect}
+                />
+              )}
+          </AccordionStep>
+        </div>
+      </div>
+
+      {/* Footer — pinned bottom */}
+      <div className="shrink-0 pt-4">
+        {canProceed ? (
           <Link
             href={`/reservation/confirm?guests=${guests}&date=${date}&service=${timeSelection.service}&time=${timeSelection.time}`}
-            className={buttonVariants({ variant: "default", size: "lg" })}
+            className="block rounded-lg bg-foreground py-2 text-center font-bold uppercase text-background"
           >
-            {t("next")}
+            {t("reserve")}
           </Link>
-        </div>
-      )}
+        ) : (
+          <span className="block cursor-not-allowed rounded-lg bg-foreground/30 py-2 text-center font-bold uppercase text-background/50">
+            {t("reserve")}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
 
-function AccordionStep({
-  icon,
-  title,
-  summary,
-  isOpen,
-  onToggle,
-  isCompleted,
-  children,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  summary: string;
-  isOpen: boolean;
-  onToggle: () => void;
-  isCompleted: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="border border-border">
-      <Button
-        variant="ghost"
-        onClick={onToggle}
-        className="flex h-auto w-full items-center justify-between px-6 py-4"
-      >
-        <div className="flex items-center gap-3">
-          <span className="text-muted-foreground">{icon}</span>
-          <span className="text-sm font-medium">
-            {isCompleted && !isOpen ? summary : title}
-          </span>
-        </div>
-        <ChevronDown
-          className={cn(
-            "text-muted-foreground h-4 w-4 transition-transform",
-            isOpen && "rotate-180",
-          )}
-        />
-      </Button>
-      {isOpen && <div className="px-6 pb-6">{children}</div>}
-    </div>
-  );
-}

@@ -39,17 +39,25 @@ export function DatePicker({ value, onChange, isDateDisabled }: Props) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  // Find next 2 open days for quick-select (skip closed days entirely)
+  const quickDates: { dateStr: string; label: string; sublabel: string }[] = [];
+  for (let i = 0; i < 30 && quickDates.length < 2; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() + i);
+    const dateStr = formatDateISO(d);
+    if (isDateDisabled?.(dateStr, d.getDay())) continue;
 
-  const todayStr = formatDateISO(today);
-  const tomorrowStr = formatDateISO(tomorrow);
+    const info = getShortDayAndDate(d, locale);
+    let sublabel = "";
+    if (i === 0) sublabel = t("today");
+    else if (i === 1) sublabel = t("tomorrow");
 
-  const todayDisabled = isDateDisabled?.(todayStr, today.getDay()) ?? false;
-  const tomorrowDisabled = isDateDisabled?.(tomorrowStr, tomorrow.getDay()) ?? false;
-
-  const todayInfo = getShortDayAndDate(today, locale);
-  const tomorrowInfo = getShortDayAndDate(tomorrow, locale);
+    quickDates.push({
+      dateStr,
+      label: `${info.day} ${info.date}`,
+      sublabel,
+    });
+  }
 
   function handleQuickSelect(dateStr: string) {
     setShowCalendar(false);
@@ -68,53 +76,35 @@ export function DatePicker({ value, onChange, isDateDisabled }: Props) {
       </p>
 
       <div className="grid grid-cols-3 gap-3">
-        {/* Today */}
-        <button
-          type="button"
-          disabled={todayDisabled}
-          onClick={() => handleQuickSelect(todayStr)}
-          className={cn(
-            "flex flex-col items-center gap-1 rounded-sm border px-3 py-4 transition-colors",
-            value === todayStr
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-border hover:bg-muted",
-            todayDisabled && "pointer-events-none opacity-30",
-          )}
-        >
-          <span className="text-sm font-semibold">
-            {todayInfo.day} {todayInfo.date}
-          </span>
-          <span className="text-xs opacity-70">{t("today")}</span>
-        </button>
-
-        {/* Tomorrow */}
-        <button
-          type="button"
-          disabled={tomorrowDisabled}
-          onClick={() => handleQuickSelect(tomorrowStr)}
-          className={cn(
-            "flex flex-col items-center gap-1 rounded-sm border px-3 py-4 transition-colors",
-            value === tomorrowStr
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-border hover:bg-muted",
-            tomorrowDisabled && "pointer-events-none opacity-30",
-          )}
-        >
-          <span className="text-sm font-semibold">
-            {tomorrowInfo.day} {tomorrowInfo.date}
-          </span>
-          <span className="text-xs opacity-70">{t("tomorrow")}</span>
-        </button>
+        {quickDates.map((qd) => (
+          <button
+            key={qd.dateStr}
+            type="button"
+            onClick={() => handleQuickSelect(qd.dateStr)}
+            className={cn(
+              "flex flex-col items-center gap-1 rounded-lg border px-3 py-4 transition-colors",
+              value === qd.dateStr && !showCalendar
+                ? "border-foreground bg-foreground text-background"
+                : "border-border",
+            )}
+          >
+            <span className="text-sm font-semibold">{qd.label}</span>
+            {qd.sublabel && (
+              <span className="text-xs opacity-70">{qd.sublabel}</span>
+            )}
+          </button>
+        ))}
 
         {/* Other */}
         <button
           type="button"
           onClick={() => setShowCalendar(!showCalendar)}
           className={cn(
-            "flex flex-col items-center gap-1 rounded-sm border px-3 py-4 transition-colors",
-            showCalendar || (value && value !== todayStr && value !== tomorrowStr)
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-border hover:bg-muted",
+            "flex flex-col items-center gap-1 rounded-lg border px-3 py-4 transition-colors",
+            showCalendar ||
+              (value && !quickDates.some((qd) => qd.dateStr === value))
+              ? "border-foreground bg-foreground text-background"
+              : "border-border",
           )}
         >
           <CalendarDays className="size-5" />
@@ -238,7 +228,7 @@ function MiniCalendar({
               className={cn(
                 "flex size-8 items-center justify-center rounded-full text-sm transition-colors",
                 isSelected
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-foreground text-background font-semibold"
                   : isToday
                     ? "border border-border font-semibold"
                     : "hover:bg-muted",

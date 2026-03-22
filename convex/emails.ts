@@ -40,20 +40,16 @@ function formatCustomerDetailsHtml(reservation: {
 
 function formatAdminDetailsHtml(reservation: {
   name: string;
-  email: string;
   date: string;
   time: string;
-  service: string;
   partySize: number;
   notes?: string;
 }) {
   return `
     <table style="border-collapse:collapse;width:100%;max-width:400px;margin:16px 0;font-family:sans-serif;font-size:14px">
       <tr><td style="padding:8px 0;color:#666">Name</td><td style="padding:8px 0;font-weight:600">${reservation.name}</td></tr>
-      <tr><td style="padding:8px 0;color:#666">Email</td><td style="padding:8px 0">${reservation.email}</td></tr>
       <tr><td style="padding:8px 0;color:#666">Date</td><td style="padding:8px 0;text-transform:capitalize">${formatDateLabel(reservation.date)}</td></tr>
       <tr><td style="padding:8px 0;color:#666">Time</td><td style="padding:8px 0">${reservation.time}</td></tr>
-      <tr><td style="padding:8px 0;color:#666">Service</td><td style="padding:8px 0">${reservation.service}</td></tr>
       <tr><td style="padding:8px 0;color:#666">Guests</td><td style="padding:8px 0">${reservation.partySize}</td></tr>
       ${reservation.notes ? `<tr><td style="padding:8px 0;color:#666">Notes</td><td style="padding:8px 0;font-style:italic">${reservation.notes}</td></tr>` : ""}
     </table>
@@ -94,7 +90,7 @@ export const sendNewReservationEmails = mutation({
       subject: "Shion — Reservation received",
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-          <h1 style="font-size:20px;font-weight:300;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px">Shion</h1>
+          <h1 style="font-size:20px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px">Shion</h1>
           <p style="font-size:15px;line-height:1.6">Dear ${reservation.name},</p>
           <p style="font-size:15px;line-height:1.6">Your reservation request has been received. The restaurant will confirm or decline your reservation shortly.</p>
           ${managementButton(manageUrl)}
@@ -112,12 +108,12 @@ export const sendNewReservationEmails = mutation({
         subject: `New reservation — ${reservation.name} (${reservation.partySize} guests)`,
         html: `
           <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-            <h1 style="font-size:20px;font-weight:300;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px">New Reservation</h1>
+            <h1 style="font-size:20px;font-weight:300;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px;color:#16a34a">New Reservation</h1>
             <p style="font-size:15px;line-height:1.6">A new reservation request has been submitted and is awaiting your confirmation.</p>
-            ${formatAdminDetailsHtml(reservation)}
             <a href="${siteUrl}/admin/reservations" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#18181b;color:#fff;text-decoration:none;font-size:14px;letter-spacing:0.1em;text-transform:uppercase">
               View reservations
             </a>
+            ${formatAdminDetailsHtml(reservation)}
           </div>
         `,
       });
@@ -155,7 +151,7 @@ export const sendStatusUpdateEmail = mutation({
       subject,
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-          <h1 style="font-size:20px;font-weight:300;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px">Shion</h1>
+          <h1 style="font-size:20px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px">Shion</h1>
           <p style="font-size:15px;line-height:1.6">Dear ${reservation.name},</p>
           <p style="font-size:15px;line-height:1.6">${message}</p>
           ${isConfirmed && manageUrl ? managementButton(manageUrl) : ""}
@@ -186,12 +182,12 @@ export const sendCancellationNotificationToAdmin = mutation({
       subject: `Reservation cancelled by customer — ${reservation.name}`,
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-          <h1 style="font-size:20px;font-weight:300;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px;color:#dc2626">Reservation Cancelled</h1>
+          <h1 style="font-size:20px;font-weight:300;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px;color:#dc2626">Reservation Cancelled</h1>
           <p style="font-size:15px;line-height:1.6">The customer <strong>${reservation.name}</strong> has cancelled their reservation.</p>
-          ${formatAdminDetailsHtml(reservation)}
           <a href="${siteUrl}/admin/reservations" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#18181b;color:#fff;text-decoration:none;font-size:14px;letter-spacing:0.1em;text-transform:uppercase">
             View reservations
           </a>
+          ${formatAdminDetailsHtml(reservation)}
         </div>
       `,
     });
@@ -216,7 +212,7 @@ export const sendModificationConfirmationToCustomer = mutation({
       subject: "Shion — Modification request received",
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-          <h1 style="font-size:20px;font-weight:300;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px">Shion</h1>
+          <h1 style="font-size:20px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px">Shion</h1>
           <p style="font-size:15px;line-height:1.6">Dear ${reservation.name},</p>
           <p style="font-size:15px;line-height:1.6">Your modification request has been received. The restaurant will review the new details and confirm or decline shortly.</p>
           ${manageUrl ? managementButton(manageUrl) : ""}
@@ -247,12 +243,12 @@ export const sendModificationNotificationToAdmin = mutation({
       subject: `Modification requested — ${reservation.name}`,
       html: `
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
-          <h1 style="font-size:20px;font-weight:300;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:24px;color:#f59e0b">Modification Requested</h1>
+          <h1 style="font-size:20px;font-weight:300;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px;color:#f59e0b">Modification Requested</h1>
           <p style="font-size:15px;line-height:1.6">The customer <strong>${reservation.name}</strong> has requested to modify their reservation. Please review the new details below and confirm or decline.</p>
-          ${formatAdminDetailsHtml(reservation)}
           <a href="${siteUrl}/admin/reservations" style="display:inline-block;margin-top:16px;padding:12px 24px;background:#18181b;color:#fff;text-decoration:none;font-size:14px;letter-spacing:0.1em;text-transform:uppercase">
             View reservations
           </a>
+          ${formatAdminDetailsHtml(reservation)}
         </div>
       `,
     });

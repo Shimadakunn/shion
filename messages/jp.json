@@ -4,6 +4,7 @@
   },
   "hero": {
     "subtitle": "和仏融合料理",
+    "description": "洗練された豊かな美食",
     "bestTable": "2025年 最優秀ビストロノミー",
     "avgPrice": "平均価格",
     "googleRating": "Google"
@@ -56,6 +57,7 @@
     "other": "その他",
     "nextAvailability": "次の空き",
     "next": "次へ",
+    "reserve": "予約する",
     "noSlots": "この日は空席がありません",
     "closed": "この日は定休日です"
   },
@@ -84,6 +86,8 @@
     "service": "サービス",
     "guests": "{count}名様",
     "notes": "備考",
+    "modify": "変更",
+    "cancel": "キャンセル",
     "cancelReservation": "予約をキャンセル",
     "cancelConfirm": "この予約をキャンセルしてよろしいですか？",
     "cancelYes": "はい、キャンセルする",
