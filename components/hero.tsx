@@ -72,7 +72,7 @@ export function Hero() {
           <Image
             src={shionLogo}
             alt="Shion"
-            className="h-full w-auto max-w-[500px]"
+            className="h-full w-auto max-w-[80dvw] md:max-w-125"
             priority
           />
         </motion.div>
