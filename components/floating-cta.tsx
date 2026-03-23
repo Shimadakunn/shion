@@ -12,11 +12,11 @@ export function FloatingCTA() {
 
   const googleMapsUrl = settings?.googleMapsUrl;
 
-  const iconBtn = "rounded-sm border border-white/70 px-2 py-2 shadow-lg";
+  const iconBtn = "pointer-events-auto rounded-sm border border-white/70 px-2 py-2 shadow-lg";
 
   return (
-    <div className="fixed bottom-0 left-0 z-50 w-full">
-      <div className="absolute inset-0 bg-linear-to-t from-black to-transparent pointer-events-none" />
+    <div className="pointer-events-none fixed bottom-0 left-0 z-50 w-full">
+      <div className="absolute inset-0 bg-linear-to-t from-black to-transparent" />
       <div className="relative flex items-center justify-center gap-2 pb-4 pt-24 text-white/90">
         <a href="#menu" className={iconBtn} aria-label={t("menu")}>
           <UtensilsCrossed className="size-5" />
@@ -37,7 +37,7 @@ export function FloatingCTA() {
         )}
         <Link
           href="/reservation"
-          className="rounded-sm bg-foreground px-4 py-2 font-semibold text-background shadow-lg text-sm"
+          className="pointer-events-auto rounded-sm bg-foreground px-4 py-2 font-semibold text-background shadow-lg text-sm"
         >
           {t("reserve")}
         </Link>

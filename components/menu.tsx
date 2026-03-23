@@ -117,7 +117,7 @@ export function Menu() {
             type="button"
             onClick={() => handleServiceChange(s)}
             className={cn(
-              "rounded-[6px] px-12 py-1 transition-colors",
+              "rounded-[6px] px-12 py-1 transition-colors cursor-pointer",
               s === service
                 ? "bg-foreground text-background"
                 : "border border-white/70 text-white/90",
@@ -183,14 +183,14 @@ export function Menu() {
 
         {/* Side image — sticky on desktop, below menu on mobile */}
         {imageUrl && (
-          <aside className="lg:w-1/3 lg:shrink-0 lg:self-start lg:sticky lg:top-8 relative overflow-hidden">
+          <aside className="lg:shrink-0 lg:sticky lg:top-[10vh] lg:h-[80vh] relative overflow-hidden">
             <Image
               src={imageUrl}
               alt=""
               width={600}
               height={800}
-              sizes="(max-width: 1024px) 100vw, 33vw"
-              className="w-full h-auto"
+              sizes="(max-width: 1024px) 100vw, 40vw"
+              className="h-full w-auto object-cover"
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-black/30" />
             <div className="absolute inset-0 bg-linear-to-l from-black/30 via-transparent to-black/30" />

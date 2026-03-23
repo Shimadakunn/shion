@@ -21,7 +21,7 @@ export function LanguageSwitcher() {
   }
 
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="pointer-events-auto flex items-center gap-0.5">
       {routing.locales.map((loc) => (
         <Button
           key={loc}

@@ -25,7 +25,7 @@ export function Footer() {
 
       {/* Curved top overlay — inverted U, black-to-transparent */}
       <svg
-        className="absolute top-0 left-0 z-10 h-56 w-full sm:h-80"
+        className="pointer-events-none absolute top-0 left-0 z-10 h-56 w-full sm:h-80"
         viewBox="0 0 1440 600"
         preserveAspectRatio="none"
       >
