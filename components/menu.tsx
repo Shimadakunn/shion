@@ -3,7 +3,7 @@
 import { useTranslations, useLocale } from "next-intl";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { FadeIn } from "./motion";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -93,6 +93,32 @@ export function Menu() {
     }[];
   }, [categories, items, subcategories, subcategoryMap]);
 
+  const sectionRef = useRef<HTMLElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  const handleScroll = useCallback(() => {
+    const section = sectionRef.current;
+    const img = imageRef.current;
+    if (!section || !img) return;
+
+    const rect = section.getBoundingClientRect();
+    const sectionHeight = rect.height;
+    // 0 when section top is at viewport top, 1 when section bottom reaches viewport bottom
+    const scrolled = Math.min(
+      1,
+      Math.max(0, -rect.top / (sectionHeight - window.innerHeight)),
+    );
+    // Scale from 1.15 (top) down to 1.0 (bottom)
+    const scale = 1.15 - scrolled * 0.15;
+    img.style.transform = `scale(${scale})`;
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
   function handleServiceChange(s: Service) {
     if (s === service) return;
     setVisible(false);
@@ -103,7 +129,7 @@ export function Menu() {
   }
 
   return (
-    <section id="menu" className="mx-4 md:mx-24 my-24 scroll-mt-24">
+    <section ref={sectionRef} id="menu" className="mx-4 md:mx-24 my-24 scroll-mt-24">
       <FadeIn>
         <h2 className="text-center text-3xl tracking-widest uppercase mb-12 font-serif font-bold">
           {t("title")}
@@ -185,12 +211,13 @@ export function Menu() {
         {imageUrl && (
           <aside className="lg:shrink-0 lg:sticky lg:top-[10vh] lg:h-[80vh] relative overflow-hidden">
             <Image
+              ref={imageRef}
               src={imageUrl}
               alt=""
               width={600}
               height={800}
               sizes="(max-width: 1024px) 100vw, 40vw"
-              className="h-full w-auto object-cover"
+              className="h-full w-auto object-cover transition-transform duration-100 ease-out will-change-transform"
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-black/30" />
             <div className="absolute inset-0 bg-linear-to-l from-black/30 via-transparent to-black/30" />
