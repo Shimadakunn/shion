@@ -85,6 +85,7 @@ export const create = mutation({
     partySize: v.number(),
     name: v.string(),
     email: v.string(),
+    phone: v.string(),
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -148,6 +149,7 @@ export const update = mutation({
     name: v.optional(v.string()),
     notes: v.optional(v.string()),
     email: v.optional(v.string()),
+    phone: v.optional(v.string()),
     status: v.optional(
       v.union(
         v.literal("pending"),

@@ -1,6 +1,6 @@
 import type { Id } from "@/convex/_generated/dataModel";
 
-export type ViewMode = "week" | "3days" | "day";
+export type ViewMode = "3days" | "day";
 
 export type ReservationStatus =
   | "pending"
@@ -18,6 +18,7 @@ export type Reservation = {
   partySize: number;
   name: string;
   email: string;
+  phone?: string;
   status: ReservationStatus;
   notes?: string;
 };

@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -8,25 +7,19 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   CalendarDays,
   Clock,
   Users,
   MessageSquare,
   Mail,
-  Sun,
-  Moon,
+  Phone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { Reservation, ReservationStatus } from "./types";
-import { STATUS_CONFIG, isLunchService, getStatusConfig } from "./constants";
+import { STATUS_CONFIG, getStatusConfig } from "./constants";
+
+const DIALOG_STATUSES: ReservationStatus[] = ["pending", "confirmed", "cancelled"];
 
 type ReservationDetailProps = {
   reservation: Reservation | null;
@@ -52,7 +45,7 @@ export function ReservationDetail({
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-lg">
         <DialogTitle>
           <span className={cn(config.dismissed && "line-through opacity-60")}>
             {r.name}
@@ -77,13 +70,6 @@ export function ReservationDetail({
             <div className="flex items-center gap-3 text-sm">
               <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
               <span className="tabular-nums">{r.time}</span>
-              <Badge variant="outline" className="ml-auto">
-                {isLunchService(r.service) ? (
-                  <><Sun className="mr-1 h-3 w-3" />{r.service}</>
-                ) : (
-                  <><Moon className="mr-1 h-3 w-3" />{r.service}</>
-                )}
-              </Badge>
             </div>
           </div>
 
@@ -93,13 +79,21 @@ export function ReservationDetail({
             <span>{r.partySize} covers</span>
           </div>
 
-          {/* Email */}
+          {/* Contact */}
           <div className="flex items-center gap-3 text-sm">
             <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
             <a href={`mailto:${r.email}`} className="text-primary underline underline-offset-2">
               {r.email}
             </a>
           </div>
+          {r.phone && (
+            <div className="flex items-center gap-3 text-sm">
+              <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+              <a href={`tel:${r.phone}`} className="text-primary underline underline-offset-2">
+                {r.phone}
+              </a>
+            </div>
+          )}
 
           {/* Notes */}
           {r.notes && (
@@ -122,26 +116,28 @@ export function ReservationDetail({
             <label className="text-xs text-muted-foreground mb-1.5 block">
               Status
             </label>
-            <Select
-              value={r.status}
-              onValueChange={(val) =>
-                onStatusChange(r._id, val as ReservationStatus)
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(STATUS_CONFIG) as Array<keyof typeof STATUS_CONFIG>).map((key) => (
-                  <SelectItem key={key} value={key}>
-                    <span className="inline-flex items-center gap-2">
-                      <span className={cn("h-2 w-2 rounded-full", STATUS_CONFIG[key].dot)} />
-                      {STATUS_CONFIG[key].label}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-3 gap-2">
+              {DIALOG_STATUSES.map((key) => {
+                const s = STATUS_CONFIG[key];
+                const active = r.status === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => { if (!active) onStatusChange(r._id, key); }}
+                    className={cn(
+                      "inline-flex items-center justify-center gap-1.5 rounded-md border px-2 py-2 text-sm font-medium transition-colors truncate",
+                      active
+                        ? cn(s.bg, s.text, s.border, "border-l-2")
+                        : "border-border text-muted-foreground hover:bg-muted"
+                    )}
+                  >
+                    <span className={cn("h-2 w-2 rounded-full", s.dot)} />
+                    {s.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </DialogContent>

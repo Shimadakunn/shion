@@ -61,6 +61,7 @@ export default function ConfirmPage() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -77,11 +78,11 @@ export default function ConfirmPage() {
       partySize: guests,
       name,
       email,
+      phone,
       notes: notes || undefined,
     });
 
-    // Send emails in background — don't block the user
-    sendEmails({ reservationId, managementToken }).catch(() => {});
+    sendEmails({ reservationId, managementToken }).catch(console.error);
 
     setConfirmed(true);
     setSubmitting(false);
@@ -172,6 +173,18 @@ export default function ConfirmPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label className="mb-2 tracking-wider uppercase">
+                {t("phone")}
+              </Label>
+              <Input
+                type="tel"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
               />
             </div>
 

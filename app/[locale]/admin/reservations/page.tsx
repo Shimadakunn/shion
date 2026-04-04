@@ -8,8 +8,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { Reservation, ReservationStatus, ServicePeriod, ViewMode } from "@/components/admin/reservations/types";
-import { formatDateISO, getMonday, getWeekDates } from "@/components/admin/reservations/utils";
-import { WeekView } from "@/components/admin/reservations/week-view";
+import { formatDateISO } from "@/components/admin/reservations/utils";
 import { ThreeDayView } from "@/components/admin/reservations/three-day-view";
 import { DayView } from "@/components/admin/reservations/day-view";
 import { ReservationDetail } from "@/components/admin/reservations/reservation-detail";
@@ -31,32 +30,23 @@ export default function AdminReservationsPage() {
   const today = useMemo(() => new Date(), []);
   const todayISO = formatDateISO(today);
 
-  const [view, setView] = useState<ViewMode>("week");
-  const [weekStart, setWeekStart] = useState(() => getMonday(today));
+  const [view, setView] = useState<ViewMode>("3days");
   const [threeDayStart, setThreeDayStart] = useState(() => new Date(today));
   const [selectedDate, setSelectedDate] = useState(todayISO);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
 
-  const weekDates = useMemo(() => getWeekDates(weekStart), [weekStart]);
   const threeDayDates = useMemo(() => getThreeDayDates(threeDayStart), [threeDayStart]);
 
-  // Query date range covers all views
-  const queryRange = useMemo(() => {
-    if (view === "week") return { startDate: weekDates[0], endDate: weekDates[6] };
-    if (view === "3days") return { startDate: threeDayDates[0], endDate: threeDayDates[2] };
-    // Day view: use the week range so switching views is instant
-    return { startDate: weekDates[0], endDate: weekDates[6] };
-  }, [view, weekDates, threeDayDates]);
+  const queryRange = useMemo(
+    () => ({ startDate: threeDayDates[0], endDate: threeDayDates[2] }),
+    [threeDayDates],
+  );
 
   const reservations = useQuery(api.reservations.getByDateRange, queryRange);
   const schedule = useQuery(api.schedule.getAll);
   const specialDates = useQuery(api.schedule.getSpecialDates);
 
-  // Compute dates to analyze depending on view
-  const activeDates = useMemo(() => {
-    if (view === "3days") return threeDayDates;
-    return weekDates;
-  }, [view, weekDates, threeDayDates]);
+  const activeDates = threeDayDates;
 
   const closedDates = useMemo(() => {
     const closed = new Set<string>();
@@ -112,15 +102,6 @@ export default function AdminReservationsPage() {
     [reservations, selectedDate],
   );
 
-  function navigateWeek(direction: -1 | 1) {
-    setWeekStart((prev) => {
-      const next = new Date(prev);
-      next.setDate(prev.getDate() + direction * 7);
-      return next;
-    });
-    setSelectedReservation(null);
-  }
-
   function navigateThreeDays(direction: -1 | 1) {
     setThreeDayStart((prev) => {
       const next = new Date(prev);
@@ -134,16 +115,12 @@ export default function AdminReservationsPage() {
     setSelectedDate((prev) => {
       const d = new Date(prev);
       d.setDate(d.getDate() + direction);
-      const newMonday = getMonday(d);
-      if (newMonday.getTime() !== weekStart.getTime())
-        setWeekStart(newMonday);
       return formatDateISO(d);
     });
     setSelectedReservation(null);
   }
 
   function goToToday() {
-    setWeekStart(getMonday(today));
     setThreeDayStart(new Date(today));
     setSelectedDate(todayISO);
     setSelectedReservation(null);
@@ -159,26 +136,12 @@ export default function AdminReservationsPage() {
       setSelectedReservation((prev) => (prev ? { ...prev, status } : null));
   }
 
-  function handleDayClick(date: string) {
-    setSelectedDate(date);
-    setView("day");
-    setSelectedReservation(null);
-  }
-
   function navigate(direction: -1 | 1) {
-    if (view === "week") navigateWeek(direction);
-    else if (view === "3days") navigateThreeDays(direction);
+    if (view === "3days") navigateThreeDays(direction);
     else navigateDay(direction);
   }
 
   // Labels
-  const weekStartDate = new Date(weekDates[0]);
-  const weekEndDate = new Date(weekDates[6]);
-  const monthLabel =
-    weekStartDate.getMonth() === weekEndDate.getMonth()
-      ? weekStartDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })
-      : `${weekStartDate.toLocaleDateString("fr-FR", { month: "short" })} – ${weekEndDate.toLocaleDateString("fr-FR", { month: "short", year: "numeric" })}`;
-
   const threeDayStartDate = new Date(threeDayDates[0]);
   const threeDayEndDate = new Date(threeDayDates[2]);
   const threeDayLabel =
@@ -193,7 +156,7 @@ export default function AdminReservationsPage() {
     month: "long",
   });
 
-  const navLabel = view === "week" ? monthLabel : view === "3days" ? threeDayLabel : dayLabel;
+  const navLabel = view === "3days" ? threeDayLabel : dayLabel;
 
   return (
     <div className="-m-4 -mb-20 md:-m-8 md:-mb-8 flex h-dvh flex-col pb-14 md:pb-0 overflow-hidden">
@@ -207,7 +170,7 @@ export default function AdminReservationsPage() {
             Today
           </Button>
           <div className="bg-muted flex rounded-none border border-border">
-            {(["week", "3days", "day"] as const).map((v) => (
+            {(["3days", "day"] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => { setView(v); setSelectedReservation(null); }}
@@ -218,7 +181,7 @@ export default function AdminReservationsPage() {
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                {v === "week" ? "Week" : v === "3days" ? "3 Days" : "Day"}
+                {v === "3days" ? "3 Days" : "Day"}
               </button>
             ))}
           </div>
@@ -238,17 +201,6 @@ export default function AdminReservationsPage() {
 
       {/* Main content */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {view === "week" && (
-          <WeekView
-            weekDates={weekDates}
-            reservations={reservations ?? []}
-            todayISO={todayISO}
-            closedDates={closedDates}
-            weekServices={dateServicesMap}
-            onDayClick={handleDayClick}
-            onReservationClick={setSelectedReservation}
-          />
-        )}
         {view === "3days" && (
           <ThreeDayView
             dates={threeDayDates}

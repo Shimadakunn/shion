@@ -65,6 +65,7 @@
     "title": "Vos informations",
     "name": "Nom complet",
     "email": "Adresse email",
+    "phone": "Numéro de téléphone",
     "notes": "Notes (optionnel)",
     "submit": "Envoyer la réservation",
     "success": "Réservation envoyée !",

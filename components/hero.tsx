@@ -67,12 +67,13 @@ export function Hero() {
       >
         <motion.div
           variants={fadeUp}
-          className="relative drop-shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+          className="relative"
         >
+          <div className="absolute inset-0 scale-110 blur-2xl bg-white/10 rounded-full" />
           <Image
             src={shionLogo}
             alt="Shion"
-            className="h-full w-auto max-w-[80dvw] md:max-w-125"
+            className="relative h-full w-auto max-w-[80dvw] md:max-w-125"
             priority
           />
         </motion.div>

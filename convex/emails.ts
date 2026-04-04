@@ -43,11 +43,13 @@ function formatAdminDetailsHtml(reservation: {
   date: string;
   time: string;
   partySize: number;
+  phone?: string;
   notes?: string;
 }) {
   return `
     <table style="border-collapse:collapse;width:100%;max-width:400px;margin:16px 0;font-family:sans-serif;font-size:14px">
       <tr><td style="padding:8px 0;color:#666">Name</td><td style="padding:8px 0;font-weight:600">${reservation.name}</td></tr>
+      ${reservation.phone ? `<tr><td style="padding:8px 0;color:#666">Phone</td><td style="padding:8px 0"><a href="tel:${reservation.phone}" style="color:#2563eb;text-decoration:none">${reservation.phone}</a></td></tr>` : ""}
       <tr><td style="padding:8px 0;color:#666">Date</td><td style="padding:8px 0;text-transform:capitalize">${formatDateLabel(reservation.date)}</td></tr>
       <tr><td style="padding:8px 0;color:#666">Time</td><td style="padding:8px 0">${reservation.time}</td></tr>
       <tr><td style="padding:8px 0;color:#666">Guests</td><td style="padding:8px 0">${reservation.partySize}</td></tr>

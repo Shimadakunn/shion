@@ -5,24 +5,6 @@ export function formatDateISO(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-export function getMonday(date: Date): Date {
-  const d = new Date(date);
-  const dayOfWeek = d.getDay();
-  d.setDate(d.getDate() - ((dayOfWeek + 6) % 7));
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-export function getWeekDates(monday: Date): string[] {
-  const dates: string[] = [];
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(monday);
-    date.setDate(monday.getDate() + i);
-    dates.push(formatDateISO(date));
-  }
-  return dates;
-}
-
 export function getCurrentMinutes(): number {
   const now = new Date();
   return now.getHours() * 60 + now.getMinutes();
