@@ -10,9 +10,9 @@ const seriffic = localFont({
   variable: "--font-serif",
 });
 export const metadata: Metadata = {
-  title: "Shion — Cuisine Franco-Japonaise",
+  title: "Shion — Cuisine Japonaise",
   description:
-    "Restaurant gastronomique franco-japonais. Réservez votre table pour une expérience culinaire unique.",
+    "Restaurant gastronomique japonais. Réservez votre table pour une expérience culinaire unique.",
 };
 
 export default async function RootLayout({
