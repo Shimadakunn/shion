@@ -4,24 +4,26 @@ import { useTranslations } from "next-intl";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Image from "next/image";
-import { storageIds } from "@/lib/storage-ids";
 import shionLogo from "@/lib/shion.png";
+import footerImage from "@/lib/images/footer.jpg";
 
 export function Footer() {
   const t = useTranslations("footer");
   const settings = useQuery(api.settings.get);
-  const imageUrl = useQuery(api.files.getUrl, { storageId: storageIds.footer });
 
   return (
     <footer className="relative px-6 py-20 ">
-      {imageUrl && (
-        <>
-          <Image src={imageUrl} alt="" fill className="object-cover" />
-          <div className="absolute inset-0 bg-black/70" />
-          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black" />
-          <div className="absolute inset-0 bg-linear-to-l from-black/20 via-transparent to-black/20" />
-        </>
-      )}
+      <Image
+        src={footerImage}
+        alt=""
+        fill
+        placeholder="blur"
+        sizes="100vw"
+        className="object-cover"
+      />
+      <div className="absolute inset-0 bg-black/70" />
+      <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black" />
+      <div className="absolute inset-0 bg-linear-to-l from-black/20 via-transparent to-black/20" />
 
       {/* Curved top overlay — inverted U, black-to-transparent */}
       <svg

@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { FadeIn } from "./motion";
 import type { Id } from "@/convex/_generated/dataModel";
 import Image from "next/image";
-import { storageIds } from "@/lib/storage-ids";
+import menuImage from "@/lib/images/menu.jpg";
 
 type Service = "lunch" | "dinner";
 type Locale = "fr" | "en" | "jp";
@@ -18,7 +18,6 @@ export function Menu() {
   const locale = useLocale() as Locale;
   const [service, setService] = useState<Service>("lunch");
   const [visible, setVisible] = useState(true);
-  const imageUrl = useQuery(api.files.getUrl, { storageId: storageIds.menu });
 
   // Load both services upfront to avoid flash on switch
   const lunchItems = useQuery(api.menu.getActiveItems, { service: "lunch" });
@@ -208,67 +207,64 @@ export function Menu() {
         </div>
 
         {/* Side image — sticky on desktop, below menu on mobile */}
-        {imageUrl && (
-          <aside className="lg:shrink-0 lg:sticky lg:top-[10vh] lg:h-[80vh] relative overflow-hidden">
-            <Image
-              ref={imageRef}
-              src={imageUrl}
-              alt=""
-              width={600}
-              height={800}
-              sizes="(max-width: 1024px) 100vw, 40vw"
-              className="h-full w-auto object-cover transition-transform duration-100 ease-out will-change-transform"
+        <aside className="lg:shrink-0 lg:sticky lg:top-[10vh] lg:h-[80vh] relative overflow-hidden">
+          <Image
+            ref={imageRef}
+            src={menuImage}
+            alt=""
+            placeholder="blur"
+            sizes="(max-width: 1024px) 100vw, 40vw"
+            className="h-full w-auto object-cover transition-transform duration-100 ease-out will-change-transform"
+          />
+          <div className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-black/30" />
+          <div className="absolute inset-0 bg-linear-to-l from-black/30 via-transparent to-black/30" />
+
+          {/* Top curve — black fading down */}
+          <svg
+            className="absolute top-0 left-0 z-10 h-40 w-full sm:h-56"
+            viewBox="0 0 600 300"
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <linearGradient id="menu-curve-top" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="black" />
+                <stop offset="40%" stopColor="black" stopOpacity="0.6" />
+                <stop offset="70%" stopColor="black" stopOpacity="0.15" />
+                <stop offset="90%" stopColor="black" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M0,300 Q300,120 600,300 L600,0 L0,0 Z"
+              fill="url(#menu-curve-top)"
             />
-            <div className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-black/30" />
-            <div className="absolute inset-0 bg-linear-to-l from-black/30 via-transparent to-black/30" />
+          </svg>
 
-            {/* Top curve — black fading down */}
-            <svg
-              className="absolute top-0 left-0 z-10 h-40 w-full sm:h-56"
-              viewBox="0 0 600 300"
-              preserveAspectRatio="none"
-            >
-              <defs>
-                <linearGradient id="menu-curve-top" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="black" />
-                  <stop offset="40%" stopColor="black" stopOpacity="0.6" />
-                  <stop offset="70%" stopColor="black" stopOpacity="0.15" />
-                  <stop offset="90%" stopColor="black" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M0,300 Q300,120 600,300 L600,0 L0,0 Z"
-                fill="url(#menu-curve-top)"
-              />
-            </svg>
-
-            {/* Bottom curve — black fading up */}
-            <svg
-              className="absolute bottom-0 left-0 z-10 h-40 w-full sm:h-56"
-              viewBox="0 0 600 300"
-              preserveAspectRatio="none"
-            >
-              <defs>
-                <linearGradient
-                  id="menu-curve-bottom"
-                  x1="0"
-                  y1="1"
-                  x2="0"
-                  y2="0"
-                >
-                  <stop offset="0%" stopColor="black" />
-                  <stop offset="40%" stopColor="black" stopOpacity="0.6" />
-                  <stop offset="70%" stopColor="black" stopOpacity="0.15" />
-                  <stop offset="90%" stopColor="black" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M0,0 Q300,180 600,0 L600,300 L0,300 Z"
-                fill="url(#menu-curve-bottom)"
-              />
-            </svg>
-          </aside>
-        )}
+          {/* Bottom curve — black fading up */}
+          <svg
+            className="absolute bottom-0 left-0 z-10 h-40 w-full sm:h-56"
+            viewBox="0 0 600 300"
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <linearGradient
+                id="menu-curve-bottom"
+                x1="0"
+                y1="1"
+                x2="0"
+                y2="0"
+              >
+                <stop offset="0%" stopColor="black" />
+                <stop offset="40%" stopColor="black" stopOpacity="0.6" />
+                <stop offset="70%" stopColor="black" stopOpacity="0.15" />
+                <stop offset="90%" stopColor="black" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M0,0 Q300,180 600,0 L600,300 L0,300 Z"
+              fill="url(#menu-curve-bottom)"
+            />
+          </svg>
+        </aside>
       </div>
     </section>
   );

@@ -1,14 +1,13 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { storageIds } from "@/lib/storage-ids";
 import Image from "next/image";
 import shionLogo from "@/lib/shion.png";
+import heroDesktop from "@/lib/images/hero-desktop.jpg";
+import heroMobile from "@/lib/images/hero-mobile.jpg";
 
 const stagger = {
   hidden: {},
@@ -23,40 +22,40 @@ const fadeUp = {
 export function Hero() {
   const t = useTranslations("hero");
   const tCta = useTranslations("cta");
-  const desktopImageUrl = useQuery(api.files.getUrl, {
-    storageId: storageIds.heroDesktop,
-  });
-  const mobileImageUrl = useQuery(api.files.getUrl, {
-    storageId: storageIds.heroMobile,
-  });
 
   return (
     <section className="relative flex h-[95dvh] flex-col items-center justify-center">
       {/* Mobile: vertical image, contained with fading edges */}
-      {mobileImageUrl && (
-        <div className="absolute inset-0  md:hidden">
-          <div
-            className="h-full w-full bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${mobileImageUrl})` }}
-          />
-          <div className="absolute inset-0 bg-black/45" />
-          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black/80" />
-          <div className="absolute inset-0 bg-linear-to-l from-black/20 via-transparent to-black/20" />
-        </div>
-      )}
+      <div className="absolute inset-0 md:hidden">
+        <Image
+          src={heroMobile}
+          alt=""
+          fill
+          priority
+          placeholder="blur"
+          sizes="(min-width: 768px) 0vw, 100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-black/45" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black/80" />
+        <div className="absolute inset-0 bg-linear-to-l from-black/20 via-transparent to-black/20" />
+      </div>
 
       {/* Desktop: landscape image, full-bleed */}
-      {desktopImageUrl && (
-        <div className="absolute inset-0 hidden md:block">
-          <div
-            className="h-full w-full bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${desktopImageUrl})` }}
-          />
-          <div className="absolute inset-0 bg-black/45" />
-          <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black/80" />
-          <div className="absolute inset-0 bg-linear-to-l from-black/10 via-transparent to-black/10" />
-        </div>
-      )}
+      <div className="absolute inset-0 hidden md:block">
+        <Image
+          src={heroDesktop}
+          alt=""
+          fill
+          priority
+          placeholder="blur"
+          sizes="(min-width: 768px) 100vw, 0vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-black/45" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-black/80" />
+        <div className="absolute inset-0 bg-linear-to-l from-black/10 via-transparent to-black/10" />
+      </div>
 
       {/* Content */}
       <motion.div
