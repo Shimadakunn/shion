@@ -2,16 +2,19 @@
 
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAdminHeader } from "@/components/admin/admin-header";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { Reservation, ReservationStatus, ServicePeriod, ViewMode } from "@/components/admin/reservations/types";
 import { formatDateISO } from "@/components/admin/reservations/utils";
 import { ThreeDayView } from "@/components/admin/reservations/three-day-view";
 import { DayView } from "@/components/admin/reservations/day-view";
 import { ReservationDetail } from "@/components/admin/reservations/reservation-detail";
+import { BlockShiftDialog } from "@/components/admin/reservations/block-shift-dialog";
+import { DAY_KEYS, DAY_LABELS } from "@/components/admin/reservations/constants";
 
 function getThreeDayDates(startDate: Date): string[] {
   const dates: string[] = [];
@@ -45,6 +48,10 @@ export default function AdminReservationsPage() {
   const reservations = useQuery(api.reservations.getByDateRange, queryRange);
   const schedule = useQuery(api.schedule.getAll);
   const specialDates = useQuery(api.schedule.getSpecialDates);
+  const blockedShiftsRaw = useQuery(api.blocked.getAll);
+  const blockedShifts = useMemo(() => blockedShiftsRaw ?? [], [blockedShiftsRaw]);
+
+  const [blockDialogOpen, setBlockDialogOpen] = useState(false);
 
   const activeDates = threeDayDates;
 
@@ -69,25 +76,49 @@ export default function AdminReservationsPage() {
     return closed;
   }, [schedule, specialDates, activeDates]);
 
+  const resolveServicesForDate = useCallback(
+    (date: string): ServicePeriod[] => {
+      if (!schedule) return [];
+      const special = (specialDates ?? []).find((sd) => sd.date === date);
+      if (special) {
+        if (!special.isOpen) return [];
+        if (special.services) return special.services;
+      }
+      const dow = new Date(date).getDay();
+      const daySchedule = schedule.find((s) => s.dayOfWeek === dow);
+      if (!daySchedule || !daySchedule.isOpen) return [];
+      return daySchedule.services;
+    },
+    [schedule, specialDates],
+  );
+
   const dateServicesMap = useMemo((): Map<string, ServicePeriod[]> => {
     const map = new Map<string, ServicePeriod[]>();
-    if (!schedule) return map;
+    for (const date of activeDates) map.set(date, resolveServicesForDate(date));
+    return map;
+  }, [activeDates, resolveServicesForDate]);
 
-    for (const date of activeDates) {
-      const dow = new Date(date).getDay();
-      const special = (specialDates ?? []).find((sd) => sd.date === date);
-
-      if (special) {
-        if (!special.isOpen) { map.set(date, []); continue; }
-        if (special.services) { map.set(date, special.services); continue; }
+  const blockedInfoMap = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        fullyBlocked: boolean;
+        windows: { startTime: string; endTime: string; note?: string }[];
       }
-
-      const daySchedule = schedule.find((s) => s.dayOfWeek === dow);
-      if (!daySchedule || !daySchedule.isOpen) { map.set(date, []); continue; }
-      map.set(date, daySchedule.services);
+    >();
+    for (const b of blockedShifts) {
+      const key = `${b.date}::${b.service}`;
+      const existing = map.get(key) ?? { fullyBlocked: false, windows: [] };
+      if (!b.startTime || !b.endTime) existing.fullyBlocked = true;
+      else existing.windows.push({
+        startTime: b.startTime,
+        endTime: b.endTime,
+        note: b.note,
+      });
+      map.set(key, existing);
     }
     return map;
-  }, [schedule, specialDates, activeDates]);
+  }, [blockedShifts]);
 
   const selectedDayServices = useMemo(
     () => dateServicesMap.get(selectedDate) ?? [],
@@ -120,11 +151,11 @@ export default function AdminReservationsPage() {
     setSelectedReservation(null);
   }
 
-  function goToToday() {
+  const goToToday = useCallback(() => {
     setThreeDayStart(new Date(today));
     setSelectedDate(todayISO);
     setSelectedReservation(null);
-  }
+  }, [today, todayISO]);
 
   function handleStatusChange(id: Id<"reservations">, status: ReservationStatus) {
     updateStatus({ id, status });
@@ -141,39 +172,34 @@ export default function AdminReservationsPage() {
     else navigateDay(direction);
   }
 
-  // Labels
-  const threeDayStartDate = new Date(threeDayDates[0]);
-  const threeDayEndDate = new Date(threeDayDates[2]);
-  const threeDayLabel =
-    threeDayStartDate.getMonth() === threeDayEndDate.getMonth()
-      ? `${threeDayStartDate.getDate()} – ${threeDayEndDate.getDate()} ${threeDayStartDate.toLocaleDateString("fr-FR", { month: "long" })}`
-      : `${threeDayStartDate.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })} – ${threeDayEndDate.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`;
-
-  const selectedDateObj = new Date(selectedDate);
-  const dayLabel = selectedDateObj.toLocaleDateString("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-
-  const navLabel = view === "3days" ? threeDayLabel : dayLabel;
-
-  return (
-    <div className="-m-4 -mb-20 md:-m-8 md:-mb-8 flex h-dvh flex-col pb-14 md:pb-0 overflow-hidden">
-      {/* Top bar */}
-      <div className="flex shrink-0 items-center justify-between border-b border-border px-4 md:px-6 py-3">
-        <h1 className="hidden md:block text-sm font-medium tracking-[0.15em] uppercase">
+  const adminHeader = useMemo(
+    () => ({
+      title: (
+        <h1 className="hidden truncate text-sm font-medium tracking-[0.15em] uppercase md:block">
           Reservation management
         </h1>
-        <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto justify-between md:justify-end">
+      ),
+      actions: (
+        <div className="flex min-w-0 items-center justify-end gap-1.5 md:gap-3">
           <Button variant="outline" size="xs" onClick={goToToday}>
             Today
           </Button>
-          <div className="bg-muted flex rounded-none border border-border">
+          <Button
+            variant="outline"
+            size="xs"
+            onClick={() => setBlockDialogOpen(true)}
+          >
+            <Lock className="h-3 w-3" />
+            Block reservations
+          </Button>
+          <div className="flex rounded-none border border-border bg-muted">
             {(["3days", "day"] as const).map((v) => (
               <button
                 key={v}
-                onClick={() => { setView(v); setSelectedReservation(null); }}
+                onClick={() => {
+                  setView(v);
+                  setSelectedReservation(null);
+                }}
                 className={cn(
                   "px-3 py-1 text-xs transition-colors",
                   view === v
@@ -186,15 +212,67 @@ export default function AdminReservationsPage() {
             ))}
           </div>
         </div>
-      </div>
+      ),
+    }),
+    [view, goToToday],
+  );
 
-      {/* Navigation bar */}
-      <div className="flex shrink-0 items-center justify-between border-b border-border px-4 md:px-6 py-2">
-        <Button variant="ghost" size="icon-sm" onClick={() => navigate(-1)}>
+  useAdminHeader(adminHeader);
+
+  const navDates = view === "3days" ? threeDayDates : [selectedDate];
+
+  return (
+    <div className="-m-4 md:-m-8 flex h-[calc(100dvh-3.5rem)] flex-col pb-14 md:pb-0 overflow-hidden">
+      {/* Navigation bar — inline day cells aligned with columns below */}
+      <div className="relative flex shrink-0 border-b border-border">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="absolute left-1 top-1/2 z-10 -translate-y-1/2"
+          onClick={() => navigate(-1)}
+        >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="text-sm font-medium capitalize">{navLabel}</span>
-        <Button variant="ghost" size="icon-sm" onClick={() => navigate(1)}>
+        {navDates.map((date) => {
+          const d = new Date(date);
+          const dayLabel = DAY_LABELS[DAY_KEYS[d.getDay()]];
+          const dayNum = d.getDate();
+          const isToday = date === todayISO;
+          const isClosed = closedDates.has(date);
+          return (
+            <div
+              key={date}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-1.5 px-10 py-1.5 border-l border-border first:border-l-0",
+                isToday && "bg-primary/[0.06]",
+                isClosed && "bg-muted/20",
+              )}
+            >
+              <span className={cn(
+                "text-[10px] uppercase tracking-wider",
+                isClosed ? "text-muted-foreground/50" : "text-muted-foreground",
+              )}>
+                {dayLabel}
+              </span>
+              <span className={cn(
+                "flex h-6 w-6 items-center justify-center text-sm",
+                isToday && !isClosed && "bg-primary text-primary-foreground rounded-full font-medium",
+                isClosed && "text-muted-foreground/50",
+              )}>
+                {dayNum}
+              </span>
+              {isClosed && (
+                <span className="text-[9px] text-muted-foreground/60 italic">Closed</span>
+              )}
+            </div>
+          );
+        })}
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="absolute right-1 top-1/2 z-10 -translate-y-1/2"
+          onClick={() => navigate(1)}
+        >
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
@@ -210,6 +288,7 @@ export default function AdminReservationsPage() {
             todayISO={todayISO}
             closedDates={closedDates}
             dateServices={dateServicesMap}
+            blockedInfoMap={blockedInfoMap}
             onReservationClick={setSelectedReservation}
           />
         )}
@@ -219,6 +298,8 @@ export default function AdminReservationsPage() {
             isClosed={closedDates.has(selectedDate)}
             services={selectedDayServices}
             isToday={selectedDate === todayISO}
+            blockedInfoMap={blockedInfoMap}
+            selectedDate={selectedDate}
             onReservationClick={setSelectedReservation}
           />
         )}
@@ -228,6 +309,13 @@ export default function AdminReservationsPage() {
         reservation={selectedReservation}
         onStatusChange={handleStatusChange}
         onClose={() => setSelectedReservation(null)}
+      />
+
+      <BlockShiftDialog
+        open={blockDialogOpen}
+        onOpenChange={setBlockDialogOpen}
+        getServicesForDate={resolveServicesForDate}
+        blockedShifts={blockedShifts}
       />
     </div>
   );

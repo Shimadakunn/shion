@@ -40,38 +40,72 @@ export const getAvailableSlots = query({
       (r) => r.status === "confirmed" || r.status === "pending",
     );
 
-    const result = services.map((svc) => {
-      const slots: { time: string; available: boolean }[] = [];
-      const [openH, openM] = svc.openTime.split(":").map(Number);
-      const [closeH, closeM] = svc.closeTime.split(":").map(Number);
-      const openMinutes = openH * 60 + openM;
-      const closeMinutes = closeH * 60 + closeM;
+    const blockedShifts = await ctx.db
+      .query("blockedShifts")
+      .withIndex("by_date", (q) => q.eq("date", args.date))
+      .collect();
 
-      const lastSeating = closeMinutes - 30;
+    const blocksByService = new Map<
+      string,
+      { startTime?: string; endTime?: string }[]
+    >();
+    for (const b of blockedShifts) {
+      const arr = blocksByService.get(b.service) ?? [];
+      arr.push({ startTime: b.startTime, endTime: b.endTime });
+      blocksByService.set(b.service, arr);
+    }
 
-      for (let m = openMinutes; m <= lastSeating; m += 15) {
-        const h = Math.floor(m / 60);
-        const min = m % 60;
-        const time = `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+    function toMinutes(t: string): number {
+      const [h, m] = t.split(":").map(Number);
+      return h * 60 + m;
+    }
 
-        const bookedCovers = activeReservations
-          .filter((r) => r.service === svc.name && r.time === time)
-          .reduce((sum, r) => sum + r.partySize, 0);
+    const result = services
+      .map((svc) => {
+        const blocks = blocksByService.get(svc.name) ?? [];
+        const fullyBlocked = blocks.some((b) => !b.startTime && !b.endTime);
+        if (fullyBlocked) return null;
 
-        slots.push({
-          time,
-          available: bookedCovers < svc.maxCovers,
-        });
-      }
+        const partialBlocks = blocks
+          .filter((b) => b.startTime && b.endTime)
+          .map((b) => ({
+            start: toMinutes(b.startTime!),
+            end: toMinutes(b.endTime!),
+          }));
 
-      return {
-        name: svc.name,
-        openTime: svc.openTime,
-        closeTime: svc.closeTime,
-        maxCovers: svc.maxCovers,
-        slots,
-      };
-    });
+        const slots: { time: string; available: boolean }[] = [];
+        const openMinutes = toMinutes(svc.openTime);
+        const closeMinutes = toMinutes(svc.closeTime);
+        const lastSeating = closeMinutes - 30;
+
+        for (let m = openMinutes; m <= lastSeating; m += 15) {
+          const h = Math.floor(m / 60);
+          const min = m % 60;
+          const time = `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+
+          const bookedCovers = activeReservations
+            .filter((r) => r.service === svc.name && r.time === time)
+            .reduce((sum, r) => sum + r.partySize, 0);
+
+          const isBlocked = partialBlocks.some(
+            (b) => m >= b.start && m < b.end,
+          );
+
+          slots.push({
+            time,
+            available: !isBlocked && bookedCovers < svc.maxCovers,
+          });
+        }
+
+        return {
+          name: svc.name,
+          openTime: svc.openTime,
+          closeTime: svc.closeTime,
+          maxCovers: svc.maxCovers,
+          slots,
+        };
+      })
+      .filter((s): s is NonNullable<typeof s> => s !== null);
 
     return { isOpen: true, services: result };
   },

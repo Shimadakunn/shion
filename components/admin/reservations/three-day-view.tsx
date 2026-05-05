@@ -1,12 +1,18 @@
 "use client";
 
 import { useMemo } from "react";
-import { Sun, Moon, Users } from "lucide-react";
+import { Sun, Moon, Users, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Reservation, ServicePeriod } from "./types";
-import { DAY_KEYS, DAY_LABELS, isLunchService, getStatusConfig } from "./constants";
+import { isLunchService, getStatusConfig } from "./constants";
 import { timeToMinutes } from "./utils";
 import { useCurrentMinutes, NowMarker } from "./now-indicator";
+import { ReservationsClosedState, ReservationsEmptyState } from "./view-states";
+
+export type BlockedInfo = {
+  fullyBlocked: boolean;
+  windows: { startTime: string; endTime: string; note?: string }[];
+};
 
 type ThreeDayViewProps = {
   dates: string[];
@@ -14,6 +20,7 @@ type ThreeDayViewProps = {
   todayISO: string;
   closedDates: Set<string>;
   dateServices: Map<string, ServicePeriod[]>;
+  blockedInfoMap: Map<string, BlockedInfo>;
   onReservationClick: (r: Reservation) => void;
 };
 
@@ -69,14 +76,9 @@ function ReservationList({
 
   if (section.reservations.length === 0)
     return (
-      <div className="px-2 py-2 text-center text-[10px] text-muted-foreground/40">
-        {isNowInService && (
-          <div className="px-1">
-            <NowMarker nowMinutes={nowMinutes} />
-          </div>
-        )}
-        —
-      </div>
+      <ReservationsEmptyState density="compact">
+        {isNowInService && <NowMarker nowMinutes={nowMinutes} />}
+      </ReservationsEmptyState>
     );
 
   return (
@@ -133,6 +135,7 @@ export function ThreeDayView({
   todayISO,
   closedDates,
   dateServices,
+  blockedInfoMap,
   onReservationClick,
 }: ThreeDayViewProps) {
   const nowMinutes = useCurrentMinutes();
@@ -185,48 +188,36 @@ export function ThreeDayView({
     return sectionsByDate.get(date)?.find((s) => s.service.name === serviceName);
   }
 
-  return (
-    <div className="flex flex-col h-full">
-      {/* Day headers */}
-      <div className="flex shrink-0 border-b border-border">
-        {dates.map((date) => {
-          const d = new Date(date);
-          const dayLabel = DAY_LABELS[DAY_KEYS[d.getDay()]];
-          const dayNum = d.getDate();
-          const isToday = date === todayISO;
-          const isClosed = closedDates.has(date);
+  const hasServiceRows = lunchServiceNames.length > 0 || dinnerServiceNames.length > 0;
+  const lunchRows = lunchServiceNames.length > 0 ? lunchServiceNames : ["lunch"];
+  const dinnerRows = dinnerServiceNames.length > 0 ? dinnerServiceNames : ["dinner"];
 
+  if (!hasServiceRows && dates.some((date) => closedDates.has(date)))
+    return (
+      <div className="flex h-full divide-x divide-border">
+        {dates.map((date) => {
+          const isClosed = closedDates.has(date);
+          const isToday = date === todayISO;
           return (
             <div
               key={date}
               className={cn(
-                "flex-1 flex items-center gap-2 px-2 py-2 border-l border-border first:border-l-0",
-                isClosed && "bg-muted/20",
+                "flex-1 min-w-0",
+                isToday && "bg-primary/[0.06]",
+                isClosed && "bg-muted/10",
               )}
             >
-              <div className="flex flex-col items-center shrink-0">
-                <span className={cn(
-                  "text-[10px] uppercase tracking-wider",
-                  isClosed ? "text-muted-foreground/50" : "text-muted-foreground",
-                )}>
-                  {dayLabel}
-                </span>
-                <span className={cn(
-                  "flex h-7 w-7 items-center justify-center text-sm",
-                  isToday && !isClosed && "bg-primary text-primary-foreground rounded-full font-medium",
-                  isClosed && "text-muted-foreground/50",
-                )}>
-                  {dayNum}
-                </span>
-              </div>
-              {isClosed && (
-                <span className="text-[9px] text-muted-foreground/60 italic">Closed</span>
-              )}
+              {isClosed && <ReservationsClosedState variant="cell" showEmpty />}
             </div>
           );
         })}
       </div>
+    );
 
+  if (!hasServiceRows) return <div className="h-full" />;
+
+  return (
+    <div className="flex flex-col h-full">
       {/* Lunch half */}
       <div className="flex-1 min-h-0 flex flex-col">
         {outsideServicePosition === "before-lunch" && (
@@ -240,20 +231,26 @@ export function ThreeDayView({
             ))}
           </div>
         )}
-        {lunchServiceNames.map((serviceName) => (
+        {lunchRows.map((serviceName) => (
           <div key={serviceName} className="flex flex-col flex-1 min-h-0">
             {/* Service header row with covers per day */}
             <div className="flex shrink-0 border-b border-border bg-muted/30">
               {dates.map((date, i) => {
                 const section = getSection(date, serviceName);
                 const isClosed = closedDates.has(date);
+                const isToday = date === todayISO;
+                const blocked = blockedInfoMap.get(`${date}::${serviceName}`);
+                const isFully = blocked?.fullyBlocked;
+                const isShiftClosed = !isClosed && !section;
                 return (
                   <div
                     key={date}
                     className={cn(
                       "flex-1 flex items-center gap-1 px-2 py-1",
                       i > 0 && "border-l border-border",
+                      isToday && "bg-primary/[0.06]",
                       isClosed && "bg-muted/20",
+                      isShiftClosed && "bg-muted/10",
                     )}
                   >
                     {i === 0 && (
@@ -266,12 +263,20 @@ export function ThreeDayView({
                     )}
                     {!isClosed && section && (
                       <span className={cn(
-                        "text-[9px] text-muted-foreground tabular-nums shrink-0",
+                        "text-[9px] text-muted-foreground tabular-nums shrink-0 flex items-center gap-1",
                         i > 0 && "ml-auto",
                         i === 0 && "ml-auto",
                       )}>
-                        <Users className="h-2.5 w-2.5 inline mr-0.5" />
-                        {section.totalCovers}
+                        {blocked && (
+                          <Lock className={cn(
+                            "h-2.5 w-2.5",
+                            isFully ? "text-destructive" : "text-amber-500",
+                          )} />
+                        )}
+                        <span>
+                          <Users className="h-2.5 w-2.5 inline mr-0.5" />
+                          {section.totalCovers}
+                        </span>
                       </span>
                     )}
                   </div>
@@ -285,21 +290,47 @@ export function ThreeDayView({
                 const section = getSection(date, serviceName);
                 const isClosed = closedDates.has(date);
                 const isToday = date === todayISO;
+                const blocked = blockedInfoMap.get(`${date}::${serviceName}`);
+                const isFully = blocked?.fullyBlocked;
+                const isShiftClosed = !isClosed && !section;
                 return (
                   <div
                     key={date}
                     className={cn(
                       "flex-1 min-w-0 overflow-y-auto",
+                      isToday && "bg-primary/[0.06]",
                       isClosed && "bg-muted/10",
+                      isShiftClosed && "bg-muted/10",
+                      !isClosed && isFully && "bg-destructive/5",
                     )}
                   >
-                    {!isClosed && section && (
-                      <ReservationList
-                        section={section}
-                        isToday={isToday}
-                        nowMinutes={nowMinutes}
-                        onReservationClick={onReservationClick}
-                      />
+                    {isClosed ? (
+                      <ReservationsClosedState variant="cell" showEmpty />
+                    ) : isShiftClosed ? (
+                      <ReservationsClosedState variant="cell" scope="shift" showEmpty />
+                    ) : (
+                      <>
+                        {isFully && (
+                          <div className="px-2 py-1 text-[9px] font-medium uppercase tracking-wider text-destructive flex items-center gap-1 border-b border-destructive/10">
+                            <Lock className="h-2.5 w-2.5" />
+                            Reservations blocked
+                          </div>
+                        )}
+                        {!isFully && blocked && blocked.windows.length > 0 && (
+                          <div className="px-2 py-0.5 text-[9px] text-amber-600 dark:text-amber-400 border-b border-amber-500/20">
+                            <Lock className="h-2.5 w-2.5 inline mr-0.5" />
+                            {blocked.windows.map((w) => `${w.startTime}–${w.endTime}`).join(", ")}
+                          </div>
+                        )}
+                        {section && (
+                          <ReservationList
+                            section={section}
+                            isToday={isToday}
+                            nowMinutes={nowMinutes}
+                            onReservationClick={onReservationClick}
+                          />
+                        )}
+                      </>
                     )}
                   </div>
                 );
@@ -344,20 +375,26 @@ export function ThreeDayView({
             ))}
           </div>
         )}
-        {dinnerServiceNames.map((serviceName) => (
+        {dinnerRows.map((serviceName) => (
           <div key={serviceName} className="flex flex-col flex-1 min-h-0">
             {/* Service header row with covers per day */}
             <div className="flex shrink-0 border-b border-border bg-muted/30">
               {dates.map((date, i) => {
                 const section = getSection(date, serviceName);
                 const isClosed = closedDates.has(date);
+                const isToday = date === todayISO;
+                const blocked = blockedInfoMap.get(`${date}::${serviceName}`);
+                const isFully = blocked?.fullyBlocked;
+                const isShiftClosed = !isClosed && !section;
                 return (
                   <div
                     key={date}
                     className={cn(
                       "flex-1 flex items-center gap-1 px-2 py-1",
                       i > 0 && "border-l border-border",
+                      isToday && "bg-primary/[0.06]",
                       isClosed && "bg-muted/20",
+                      isShiftClosed && "bg-muted/10",
                     )}
                   >
                     {i === 0 && (
@@ -370,10 +407,18 @@ export function ThreeDayView({
                     )}
                     {!isClosed && section && (
                       <span className={cn(
-                        "text-[9px] text-muted-foreground tabular-nums shrink-0 ml-auto",
+                        "text-[9px] text-muted-foreground tabular-nums shrink-0 ml-auto flex items-center gap-1",
                       )}>
-                        <Users className="h-2.5 w-2.5 inline mr-0.5" />
-                        {section.totalCovers}
+                        {blocked && (
+                          <Lock className={cn(
+                            "h-2.5 w-2.5",
+                            isFully ? "text-destructive" : "text-amber-500",
+                          )} />
+                        )}
+                        <span>
+                          <Users className="h-2.5 w-2.5 inline mr-0.5" />
+                          {section.totalCovers}
+                        </span>
                       </span>
                     )}
                   </div>
@@ -387,21 +432,47 @@ export function ThreeDayView({
                 const section = getSection(date, serviceName);
                 const isClosed = closedDates.has(date);
                 const isToday = date === todayISO;
+                const blocked = blockedInfoMap.get(`${date}::${serviceName}`);
+                const isFully = blocked?.fullyBlocked;
+                const isShiftClosed = !isClosed && !section;
                 return (
                   <div
                     key={date}
                     className={cn(
                       "flex-1 min-w-0 overflow-y-auto",
+                      isToday && "bg-primary/[0.06]",
                       isClosed && "bg-muted/10",
+                      isShiftClosed && "bg-muted/10",
+                      !isClosed && isFully && "bg-destructive/5",
                     )}
                   >
-                    {!isClosed && section && (
-                      <ReservationList
-                        section={section}
-                        isToday={isToday}
-                        nowMinutes={nowMinutes}
-                        onReservationClick={onReservationClick}
-                      />
+                    {isClosed ? (
+                      <ReservationsClosedState variant="cell" showEmpty />
+                    ) : isShiftClosed ? (
+                      <ReservationsClosedState variant="cell" scope="shift" showEmpty />
+                    ) : (
+                      <>
+                        {isFully && (
+                          <div className="px-2 py-1 text-[9px] font-medium uppercase tracking-wider text-destructive flex items-center gap-1 border-b border-destructive/10">
+                            <Lock className="h-2.5 w-2.5" />
+                            Reservations blocked
+                          </div>
+                        )}
+                        {!isFully && blocked && blocked.windows.length > 0 && (
+                          <div className="px-2 py-0.5 text-[9px] text-amber-600 dark:text-amber-400 border-b border-amber-500/20">
+                            <Lock className="h-2.5 w-2.5 inline mr-0.5" />
+                            {blocked.windows.map((w) => `${w.startTime}–${w.endTime}`).join(", ")}
+                          </div>
+                        )}
+                        {section && (
+                          <ReservationList
+                            section={section}
+                            isToday={isToday}
+                            nowMinutes={nowMinutes}
+                            onReservationClick={onReservationClick}
+                          />
+                        )}
+                      </>
                     )}
                   </div>
                 );

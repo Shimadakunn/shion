@@ -70,6 +70,14 @@ export default defineSchema({
     note: v.optional(v.string()),
   }).index("by_date", ["date"]),
 
+  blockedShifts: defineTable({
+    date: v.string(),
+    service: v.string(),
+    startTime: v.optional(v.string()),
+    endTime: v.optional(v.string()),
+    note: v.optional(v.string()),
+  }).index("by_date", ["date"]),
+
   reservations: defineTable({
     date: v.string(),
     time: v.string(),

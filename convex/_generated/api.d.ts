@@ -8,9 +8,9 @@
  * @module
  */
 
+import type * as blocked from "../blocked.js";
 import type * as categories from "../categories.js";
 import type * as emails from "../emails.js";
-import type * as files from "../files.js";
 import type * as menu from "../menu.js";
 import type * as reservations from "../reservations.js";
 import type * as schedule from "../schedule.js";
@@ -24,9 +24,9 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  blocked: typeof blocked;
   categories: typeof categories;
   emails: typeof emails;
-  files: typeof files;
   menu: typeof menu;
   reservations: typeof reservations;
   schedule: typeof schedule;

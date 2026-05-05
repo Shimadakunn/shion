@@ -1,18 +1,22 @@
 "use client";
 
 import { useMemo } from "react";
-import { Sun, Moon, X, Users } from "lucide-react";
+import { Sun, Moon, Users, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Reservation, ServicePeriod } from "./types";
 import { isLunchService, getStatusConfig } from "./constants";
 import { timeToMinutes } from "./utils";
 import { useCurrentMinutes, NowMarker } from "./now-indicator";
+import type { BlockedInfo } from "./three-day-view";
+import { ReservationsClosedState, ReservationsEmptyState } from "./view-states";
 
 type DayViewProps = {
   reservations: Reservation[];
   isClosed: boolean;
   services: ServicePeriod[];
   isToday: boolean;
+  blockedInfoMap: Map<string, BlockedInfo>;
+  selectedDate: string;
   onReservationClick: (r: Reservation) => void;
 };
 
@@ -27,17 +31,20 @@ function ServiceBlock({
   section,
   isToday,
   nowMinutes,
+  blocked,
   onReservationClick,
 }: {
   section: ServiceSection;
   isToday: boolean;
   nowMinutes: number;
+  blocked?: BlockedInfo;
   onReservationClick: (r: Reservation) => void;
 }) {
   const isLunch = isLunchService(section.service.name);
   const svcOpen = timeToMinutes(section.service.openTime);
   const svcClose = timeToMinutes(section.service.closeTime);
   const isNowInService = isToday && nowMinutes >= svcOpen && nowMinutes < svcClose;
+  const isFully = blocked?.fullyBlocked;
 
   let nowInsertIdx = -1;
   if (isNowInService) {
@@ -52,6 +59,7 @@ function ServiceBlock({
       <div className={cn(
         "flex items-center gap-2 px-4 py-2.5 sticky top-0 z-10 bg-background border-b border-border",
         isNowInService && "bg-red-500/[0.03]",
+        isFully && "bg-destructive/5",
       )}>
         {isLunch ? (
           <Sun className="h-3.5 w-3.5 text-amber-500 shrink-0" />
@@ -64,6 +72,17 @@ function ServiceBlock({
         <span className="text-[10px] text-muted-foreground tabular-nums">
           {section.service.openTime} – {section.service.closeTime}
         </span>
+        {blocked && (
+          <span className={cn(
+            "flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider",
+            isFully ? "text-destructive" : "text-amber-600 dark:text-amber-400",
+          )}>
+            <Lock className="h-3 w-3" />
+            {isFully
+              ? "Reservations blocked"
+              : blocked.windows.map((w) => `${w.startTime}–${w.endTime}`).join(", ")}
+          </span>
+        )}
         <div className="ml-auto flex items-center gap-3">
           {section.pendingCount > 0 && (
             <span className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 font-medium">
@@ -79,10 +98,9 @@ function ServiceBlock({
       </div>
 
       {section.reservations.length === 0 ? (
-        <div className="px-4 py-4 text-center text-xs text-muted-foreground/50">
+        <ReservationsEmptyState>
           {isNowInService && <NowMarker nowMinutes={nowMinutes} />}
-          No reservations
-        </div>
+        </ReservationsEmptyState>
       ) : (
         <div>
           {section.reservations.map((r, idx) => {
@@ -139,6 +157,8 @@ export function DayView({
   isClosed,
   services,
   isToday,
+  blockedInfoMap,
+  selectedDate,
   onReservationClick,
 }: DayViewProps) {
   const nowMinutes = useCurrentMinutes();
@@ -185,41 +205,31 @@ export function DayView({
   }, [isToday, sections, lunchSections, dinnerSections, nowMinutes]);
 
   if (isClosed && reservations.length === 0)
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="mb-4 inline-flex items-center gap-2 border border-destructive/20 bg-destructive/5 px-4 py-2 text-sm text-destructive">
-            <X className="h-4 w-4" />
-            This day is normally closed
-          </div>
-          <p className="text-muted-foreground text-sm">No reservations</p>
-        </div>
-      </div>
-    );
+    return <ReservationsClosedState showEmpty />;
 
   return (
     <div className="flex flex-col divide-y divide-border h-full">
-      {isClosed && (
-        <div className="shrink-0 flex items-center gap-2 border-b border-destructive/20 bg-destructive/5 px-4 py-2 text-sm text-destructive">
-          <X className="h-4 w-4 shrink-0" />
-          This day is normally closed
-        </div>
-      )}
+      {isClosed && <ReservationsClosedState variant="banner" />}
 
       {/* Lunch half */}
       <div className="flex-1 min-h-0 overflow-y-auto">
         {outsideServicePosition === "before-lunch" && (
           <div className="px-4 py-1"><NowMarker nowMinutes={nowMinutes} /></div>
         )}
-        {lunchSections.map((section) => (
-          <ServiceBlock
-            key={section.service.name}
-            section={section}
-            isToday={isToday}
-            nowMinutes={nowMinutes}
-            onReservationClick={onReservationClick}
-          />
-        ))}
+        {lunchSections.length > 0 ? (
+          lunchSections.map((section) => (
+            <ServiceBlock
+              key={section.service.name}
+              section={section}
+              isToday={isToday}
+              nowMinutes={nowMinutes}
+              blocked={blockedInfoMap.get(`${selectedDate}::${section.service.name}`)}
+              onReservationClick={onReservationClick}
+            />
+          ))
+        ) : (
+          <ReservationsClosedState scope="shift" showEmpty />
+        )}
         {outsideServicePosition === "after-lunch" && (
           <div className="px-4 py-1"><NowMarker nowMinutes={nowMinutes} /></div>
         )}
@@ -236,15 +246,20 @@ export function DayView({
         {outsideServicePosition === "before-dinner" && (
           <div className="px-4 py-1"><NowMarker nowMinutes={nowMinutes} /></div>
         )}
-        {dinnerSections.map((section) => (
-          <ServiceBlock
-            key={section.service.name}
-            section={section}
-            isToday={isToday}
-            nowMinutes={nowMinutes}
-            onReservationClick={onReservationClick}
-          />
-        ))}
+        {dinnerSections.length > 0 ? (
+          dinnerSections.map((section) => (
+            <ServiceBlock
+              key={section.service.name}
+              section={section}
+              isToday={isToday}
+              nowMinutes={nowMinutes}
+              blocked={blockedInfoMap.get(`${selectedDate}::${section.service.name}`)}
+              onReservationClick={onReservationClick}
+            />
+          ))
+        ) : (
+          <ReservationsClosedState scope="shift" showEmpty />
+        )}
         {outsideServicePosition === "after-dinner" && (
           <div className="px-4 py-1"><NowMarker nowMinutes={nowMinutes} /></div>
         )}
